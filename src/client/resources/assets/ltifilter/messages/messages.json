@@ -74,6 +74,8 @@
     "&8- &aCtrl &f+ &aG &8- &7Aby wlaczyc filtrowanie",
     "&8- &7albo &f/ltf filter",
     " ",
+    "&8- &aSHIFT &8- &7Aby podświetlić przedmioty",
+    " ",
     " &6| &eConfig zostal wygenerowany w miejscu:",
     " &6| &e%appdata%/.minecraft/config/&6ltitemfilter-config.json",
     " "
