@@ -1,0 +1,106 @@
+{
+  "mod.info": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Mod LT-ItemFilter by LordTricker",
+    "&8- &fDołącz do discord&8: &3https://dc.ltmods.pl/",
+    "&8- &fMoj GitHub&8: &3https://github.com/LordTricker/LT-ItemFilter",
+    "&8- &fChcesz wesprzec? &3https://buycoffee.to/lordtricker",
+    " ",
+    " &6| &eConfig został wygenerowany w miejscu:",
+    " &6| &e%appdata%/.minecraft/config/&6ltitemfilter-config.json",
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Komendy pod &f/ltf pomoc",
+    " "
+  ],
+  "command.defaultprofile.success": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Domyślny profil ustawiony na: &f%profile%",
+    " "
+  ],
+  "command.profiles.header": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Dostępne profile:"
+  ],
+  "profile.available.line": [
+    "&7- &f%profile% &8[&eKliknij aby zmienić&8]"
+  ],
+  "profile.picked.line": [
+    "&7- &a%profile% &8[&2Wybrany&8]"
+  ],
+  "command.profile.change": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Twój aktywny profil został zmieniony na: &f%profile%",
+    " "
+  ],
+  "command.add.success": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Dodano przedmiot &f%item% &7do profilu &f%profile%",
+    " "
+  ],
+  "command.remove.success": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Usunięto przedmiot &f%item% &7z profilu &f%profile%"
+  ],
+  "command.list.header": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Przedmioty w profilu &f%profile%:"
+  ],
+  "list.icon.edit": [
+    "&8[&eEdytuj&8]"
+  ],
+  "list.icon.edit.hover": [
+    "&eKliknij aby zedytować"
+  ],
+  "list.icon.remove": [
+    "&8[&cUsun&8]"
+  ],
+  "list.icon.remove.hover": [
+    "&cKliknij aby usunąć"
+  ],
+  "list.item.line": [
+    "&8- &f%item%&8"
+  ],
+  "command.help": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Dostępne komendy:",
+    "&8- &f/lts filter &8- &7włącz/wyłącz filtr przedmiotów",
+    "&8- &f/lts add <item> &8- &7dodaj przedmiot do filtra",
+    "&8- &f/lts remove <item> &8- &7usuń przedmiot z filtra",
+    "&8- &f/lts list &8- &7lista przedmiotów w aktualnym profilu",
+    "&8- &f/lts profiles &8- &&lista dostępnych profili",
+    "&8- &f/lts config save &7- zapisz konfigurację",
+    "&8- &f/lts config reload &7- przeładuj konfigurację",
+    " ",
+    "&8- &aCtrl &f+ &aG &8- &7Aby wlaczyc filtrowanie",
+    "&8- &7albo &f/ltf filter",
+    " ",
+    " &6| &eConfig zostal wygenerowany w miejscu:",
+    " &6| &e%appdata%/.minecraft/config/&6ltitemfilter-config.json",
+    " "
+  ],
+  "command.config.save.success": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Konfiguracja zapisana pomyślnie!",
+    " "
+  ],
+  "command.config.reload.success": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Konfiguracja przeładowana pomyślnie!",
+    " "
+  ],
+  "player.join": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Witaj na serwerze! Twój profil: &f%profile%",
+    " "
+  ],
+  "command.filter.toggle.on": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Filtr przedmiotów został włączony.",
+    " "
+  ],
+  "command.filter.toggle.off": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Filtr przedmiotów został wyłączony.",
+    " "
+  ]
+}

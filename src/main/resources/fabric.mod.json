@@ -1,37 +1,35 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "ltifilter",
 	"version": "${version}",
-	"name": "Example mod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "LT-ItemFilter",
+	"description": "Amatorska modyfikacja pozwalająca na szybkie czyszczenie przedmiotów w ewkipunku, a także podświetlanie ich na mapie. Jeżeli powielasz, to miłoby było jakbyś podzielił się info na kim bazujesz <3.",
 	"authors": [
-		"Me!"
+		"LordTricker"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://blazecode.pl/",
+		"sources": "https://github.com/LordTricker"
 	},
-	"license": "CC0-1.0",
-	"icon": "assets/modid/icon.png",
+	"license": "MIT",
+	"icon": "assets/ltifilter/icon.png",
+
 	"environment": "*",
 	"entrypoints": {
-		"main": [
-			"com.example.ExampleMod"
-		],
 		"client": [
-			"com.example.ExampleModClient"
+			"pl.lordtricker.ltifilter.client.LtifilterClient"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
 		{
-			"config": "modid.client.mixins.json",
+			"config": "ltifilter.client.mixins.json",
 			"environment": "client"
 		}
 	],
+
 	"depends": {
-		"fabricloader": ">=0.16.10",
-		"minecraft": "~1.21.4",
+		"fabricloader": ">=0.15.11",
+		"minecraft": ">=1.21.3 <=1.21.4",
 		"java": ">=21",
 		"fabric-api": "*"
 	},

@@ -1,0 +1,16 @@
+{
+	"required": true,
+	"package": "pl.lordtricker.ltifilter.client.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+      "ItemEntityRendererMixin",
+      "ItemStackEntityRenderStateMixin"
+	],
+	"client": [
+      "ItemEntityRendererMixin",
+      "ItemStackEntityRenderStateMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
