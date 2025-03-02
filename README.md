@@ -1,63 +1,67 @@
-# LT-Rynek - Mod do Minecrafta
+# LT-ItemFilter - Mod do Minecrafta
 
 ## 📌 Opis
-**LT-Rynek** to amatorska modyfikacja ułatwiająca działania rynkowe na różnych serwerach Minecraft. Umożliwia szybkie zarządzanie profilami handlowymi, dodawanie oraz usuwanie przedmiotów i przeglądanie dostępnych ofert. Jeśli korzystasz z moda i chciałbyś się odwdzięczyć, podziel się informacją, na kim bazujesz! ❤️
-
-## ✨ Funkcje
-- Możliwość tworzenia i zarządzania profilami rynkowymi.
-- Dodawanie przedmiotów do profili z maksymalną ceną.
-- Usuwanie przedmiotów z profili.
-- Wyświetlanie listy przedmiotów w danym profilu.
-- Wygodne komendy ułatwiające operacje rynkowe.
-- Automatycznie generowany plik konfiguracyjny dla profili użytkownika.
+**LT-ItemFilter** to modyfikacja do Minecrafta, która automatycznie filtruje przedmioty w inwentarzu. Mod umożliwia łatwe zarządzanie listą przedmiotów, które mają być zatrzymane, dzięki czemu nie musisz martwić się o przypadkowe wyrzucanie cennych itemów. Dzięki intuicyjnym komendom możesz szybko dodawać, usuwać przedmioty lub przełączać profile filtrów – wszystko to z poziomu czatu!
 
 ## 🛠️ Dostępne wersje
-Dostępnę Releasy: https://github.com/LordTricker/LT-Rynek/releases
-- 🟢 1.18.2 - [Pobierz z Gtihub](https://github.com/LordTricker/LT-Rynek/releases/download/ver%2F1.18.2/ltrynek-1.0.0-Alpha+1.18.2.jar)
-- 🟢 1.19.2 - [Pobierz z Gtihub](https://github.com/LordTricker/LT-Rynek/releases/download/ver%2F1.19.2/ltrynek-1.0.2-Alpha+1.19.2.jar)
-- 🟢 1.19.4 - [Pobierz z Gtihub](https://github.com/LordTricker/LT-Rynek/releases/download/ver%2F1.19.4/ltrynek-1.0.0-Alpha+1.19.4.jar)
-- 🔷 1.21.1 - [Pobierz z Gtihub](https://github.com/LordTricker/LT-Rynek/releases/download/ver%2F1.21.1/ltrynek-1.0.0-Alpha+1.21.1.jar)
-- 🔷 1.21.3 - [Pobierz z Gtihub](https://github.com/LordTricker/LT-Rynek/releases/download/ver%2F1.21.4/ltrynek-1.0.0-Alpha+1.21.4.jar)
-- 🔷 1.21.4 - [Pobierz z Gtihub](https://github.com/LordTricker/LT-Rynek/releases/download/ver%2F1.21.4/ltrynek-1.0.0-Alpha+1.21.4.jar)
-- 🔴 1.21.5 - Wkrótce
+Sprawdź najnowsze wydania na [GitHubie](https://github.com/LordTricker/LT-ItemFilter/releases):
 
-🔷 - Te wersje będą miały najnowsze updaty
+- 🟢 **1.18.2** – [Pobierz z GitHub](https://github.com/LordTricker/LT-ItemFilter/releases/download/1.18.2/ltitemfilter-1.0.0.jar)
+- 🟢 **1.19.2** – [Pobierz z GitHub](https://github.com/LordTricker/LT-ItemFilter/releases/download/1.19.2/ltitemfilter-1.0.1.jar)
+- 🔷 **1.21.1** – [Pobierz z GitHub](https://github.com/LordTricker/LT-ItemFilter/releases/download/1.21.1/ltitemfilter-1.0.0.jar)
+- 🔴 **1.21.5** – Wkrótce
+
+## ✨ Funkcje
+- Automatyczne wyrzucanie przedmiotów niepożądanych z inwentarza.
+- Zarządzanie listą dozwolonych przedmiotów przez profile.
+- Łatwe dodawanie i usuwanie przedmiotów z filtra poprzez komendy.
+- Przejrzysty interfejs z podświetlaniem przedmiotów (SHIFT) oraz wywoływanie filtru (Ctrl+G).
+- Generowanie i ładowanie konfiguracji z pliku `ltitemfilter-config.json`.
 
 ## 📜 Komendy
-| Komenda | Opis |
-|---------|------|
-| `/ltr` | Wyświetla informacje o modzie i aktywnym profilu |
-| `/ltr profiles` | Wyświetla dostępne profile |
-| `/ltr add <maxCena> <przedmiot>` | Dodaje przedmiot do aktywnego profilu |
-| `/ltr remove <przedmiot>` | Usuwa przedmiot z profilu |
-| `/ltr list` | Wyświetla przedmioty w aktywnym profilu |
-| `/ltr pomoc` | Lista dostępnych komend |
-| `/ltr config save` | Zapisuje konfigurację |
-| `/ltr config reload` | Przeładowuje dane z konfiguracji |
+Poniżej znajduje się lista dostępnych komend (skrócona wersja z pliku `messages.json`):
 
-## 🔧 Instalacja
-1. Pobierz najnowszą wersję moda z [GitHuba](https://github.com/LordTricker/LT-Rynek/).
-2. Umieść plik `.jar` w katalogu `mods` w folderze Minecrafta.
-3. Uruchom grę i ciesz się nowymi funkcjami!
+| Komenda                         | Opis                                                          |
+|---------------------------------|---------------------------------------------------------------|
+| `/lts filter`                   | Włącz/wyłącz filtr przedmiotów                                |
+| `/lts add <item>`               | Dodaj przedmiot do filtra                                     |
+| `/lts remove <item>`            | Usuń przedmiot z filtra                                       |
+| `/lts list`                     | Wyświetl listę przedmiotów w aktualnym profilu                |
+| `/lts profiles`                 | Lista dostępnych profili                                      |
+| `/lts config save`              | Zapisz konfigurację                                           |
+| `/lts config reload`            | Przeładuj konfigurację                                        |
+
+Dodatkowo:
+- **Ctrl+G** – skrót aktywujący filtrowanie (alternatywnie komenda `/lts filter`)
+- **SHIFT** – podświetla przedmioty w inwentarzu
+
 
 ## 🛠 Konfiguracja
 Po pierwszym uruchomieniu mod generuje plik konfiguracyjny:
 ```
-%appdata%/.minecraft/config/ltrynek-profiles.json
+%appdata%/.minecraft/config/ltitemfilter-config.json
 ```
 W pliku można ręcznie edytować profile i ich zawartość.
 
+
+## 🔧 Instalacja
+1. Pobierz najnowszą wersję moda z [GitHuba](https://github.com/LordTricker/LT-ItemFilter/releases).
+2. Umieść plik `.jar` w folderze `mods` w katalogu Minecrafta.
+3. Uruchom grę – mod automatycznie wygeneruje plik konfiguracyjny w `%appdata%/.minecraft/config/ltitemfilter-config.json`.
+
+## 🛠 Konfiguracja
+Po pierwszym uruchomieniu mod generuje plik konfiguracyjny, w którym możesz ręcznie edytować listy przedmiotów oraz profile filtrów. Upewnij się, że struktura pliku nie zostanie zmieniona – modyfikuj tylko zawartość list (np. dodając identyfikatory przedmiotów).
+
 ## 👥 Autorzy
-- **LordTricker** - Główny twórca moda
-- **Mr. GPT** - Wsparcie merytoryczne 🤖
+- **LordTricker** – Główny twórca moda
+- **AdversTM** – pomoc przy podświetleniu przedmiotów
+- **Mr. GPT** – Wsparcie merytoryczne 🤖
 
 ## 🌍 Kontakt
-- Strona domowa: [BlazeCode](https://blazecode.pl/)
-- Repozytorium: [GitHub](https://github.com/LordTricker)
-- Wesprzyj autora: [Tipply](https://tipply.pl/@lordtricker)
-- Mój discord: LordTricker
-
-🎉 **Dziękujemy za korzystanie z LT-Rynek!**
+- **Strona:** [BlazeCode](https://blazecode.pl/)
+- **Repozytorium:** [GitHub](https://github.com/LordTricker)
+- **Serwer discord::** [Discord](https://dc.ltmods.pl/)
+- **Discord:** LordTricker
 
 ---
 
