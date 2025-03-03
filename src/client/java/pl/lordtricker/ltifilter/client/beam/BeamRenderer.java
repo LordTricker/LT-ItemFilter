@@ -8,7 +8,7 @@ import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
 public abstract class BeamRenderer extends RenderLayer {
-    private static final Identifier BEAM_TEXTURE = Identifier.tryParse("ltifilter:textures/loot_beam.png");
+    private static final Identifier BEAM_TEXTURE = Identifier.tryParse("ltifilter:textures/lt-beam.png");
     private static final RenderLayer BEAM_LAYER = createBeamLayer();
 
     protected BeamRenderer(String name, VertexFormat vertexFormat, VertexFormat.DrawMode mode, int expectedBufferSize,
@@ -24,17 +24,20 @@ public abstract class BeamRenderer extends RenderLayer {
      * @param worldTime Aktualny czas świata.
      */
     public static void renderBeam(MatrixStack stack, VertexConsumerProvider buffer, float pticks, long worldTime) {
-        float beamAlpha = 1f;   // stała wartość opacity
-        float beamHeight = 0.95f;  // wysokość słupa
-        float radius = 0.05f;     // promień beamu
+        float beamAlpha = 1f;      // stała wartość opacity
+        float beamHeight = 1f;  // wysokość słupa
+        float radius = 0.05f;      // promień beamu
 
         // Kolor – jasno niebieski
         float red = 0.5f, green = 0.8f, blue = 1.0f;
 
         stack.push();
-        stack.translate(0, 0, 0);
-        float rotation = (worldTime % 60) + pticks;
-        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation * 3.0f));
+        long currentTime = System.currentTimeMillis();
+        float rotationDegrees = ((currentTime % 10000) / 10000.0f) * 360.0f;
+        rotationDegrees += pticks;
+
+        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
+
         VertexConsumer consumer = buffer.getBuffer(BEAM_LAYER);
 
         renderSide(stack, consumer, -radius, -radius,  radius, -radius, red, green, blue, beamAlpha, beamHeight);

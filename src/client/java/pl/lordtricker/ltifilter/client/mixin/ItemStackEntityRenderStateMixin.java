@@ -21,7 +21,6 @@ public class ItemStackEntityRenderStateMixin implements ItemStackEntityRenderBea
     @Inject(at = @At("HEAD"), method = "update")
     public void update(Entity entity, ItemStack stack, ItemModelManager itemModelManager, CallbackInfo ci) {
         this.shouldRenderBeam = ClientFilterManager.shouldRenderItemBeam(stack);
-        System.out.println("update shouldRenderBeam: " + shouldRenderBeam + " item: " + stack);
     }
 
     @Override
