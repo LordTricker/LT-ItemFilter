@@ -3,12 +3,11 @@ package pl.lordtricker.ltifilter.client.beam;
 import net.minecraft.client.render.*;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.TriState;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
 
 public abstract class BeamRenderer extends RenderLayer {
-    private static final Identifier BEAM_TEXTURE = Identifier.tryParse("ltifilter:textures/loot_beam.png");
+    private static final Identifier BEAM_TEXTURE = Identifier.tryParse("ltifilter:textures/lt-beam.png");
     private static final RenderLayer BEAM_LAYER = createBeamLayer();
 
     protected BeamRenderer(String name, VertexFormat vertexFormat, VertexFormat.DrawMode mode, int expectedBufferSize,
@@ -24,17 +23,20 @@ public abstract class BeamRenderer extends RenderLayer {
      * @param worldTime Aktualny czas świata.
      */
     public static void renderBeam(MatrixStack stack, VertexConsumerProvider buffer, float pticks, long worldTime) {
-        float beamAlpha = 1f;   // stała wartość opacity
-        float beamHeight = 0.95f;  // wysokość słupa
-        float radius = 0.05f;     // promień beamu
+        float beamAlpha = 1f;      // stała wartość opacity
+        float beamHeight = 1f;  // wysokość słupa
+        float radius = 0.05f;      // promień beamu
 
         // Kolor – jasno niebieski
         float red = 0.5f, green = 0.8f, blue = 1.0f;
 
         stack.push();
-        stack.translate(0, 0, 0);
-        float rotation = (worldTime % 60) + pticks;
-        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotation * 3.0f));
+        long currentTime = System.currentTimeMillis();
+        float rotationDegrees = ((currentTime % 10000) / 10000.0f) * 360.0f;
+        rotationDegrees += pticks;
+
+        stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
+
         VertexConsumer consumer = buffer.getBuffer(BEAM_LAYER);
 
         renderSide(stack, consumer, -radius, -radius,  radius, -radius, red, green, blue, beamAlpha, beamHeight);
@@ -44,7 +46,6 @@ public abstract class BeamRenderer extends RenderLayer {
 
         stack.pop();
     }
-
 
     /**
      * Rysuje jedną pionową ściankę (quad) beamu od y=0 do y=beamHeight.
@@ -62,7 +63,6 @@ public abstract class BeamRenderer extends RenderLayer {
         addVertex(consumer, entry, pose, x1, height, z1, r, g, b, alpha, 0f, 1f);
     }
 
-
     /**
      * Dodaje wierzchołek do bufora. Używamy metody vertex(...) i na końcu wywołujemy next().
      */
@@ -76,7 +76,6 @@ public abstract class BeamRenderer extends RenderLayer {
                 .overlay(OverlayTexture.DEFAULT_UV)
                 .light(15728880)
                 .normal(entry, 0.0F, 1.0F, 0.0F);
-
     }
 
     /**
@@ -84,7 +83,7 @@ public abstract class BeamRenderer extends RenderLayer {
      */
     private static RenderLayer createBeamLayer() {
         RenderLayer.MultiPhaseParameters params = RenderLayer.MultiPhaseParameters.builder()
-                .texture(new RenderPhase.Texture(BEAM_TEXTURE, TriState.FALSE, false))
+                .texture(new RenderPhase.Texture(BEAM_TEXTURE, false, false))
                 .lightmap(RenderLayer.ENABLE_LIGHTMAP)
                 .transparency(RenderLayer.TRANSLUCENT_TRANSPARENCY)
                 .program(RenderLayer.TRANSLUCENT_PROGRAM)

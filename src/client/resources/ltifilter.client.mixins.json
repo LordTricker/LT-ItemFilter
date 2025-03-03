@@ -4,11 +4,11 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
       "ItemEntityRendererMixin",
-      "ItemStackEntityRenderStateMixin"
+		"ItemEntityMixin"
 	],
 	"client": [
       "ItemEntityRendererMixin",
-      "ItemStackEntityRenderStateMixin"
+		"ItemEntityMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1
