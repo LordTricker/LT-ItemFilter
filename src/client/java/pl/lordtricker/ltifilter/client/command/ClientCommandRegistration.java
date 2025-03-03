@@ -2,11 +2,8 @@ package pl.lordtricker.ltifilter.client.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
-import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.util.registry.Registry;
+import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
@@ -24,14 +21,7 @@ import java.util.Map;
 
 public class ClientCommandRegistration {
 
-    public static void registerCommands() {
-        ClientCommandRegistrationCallback.EVENT.register(ClientCommandRegistration::registerLtFilterCommand);
-    }
-
-    private static void registerLtFilterCommand(
-            CommandDispatcher<FabricClientCommandSource> dispatcher,
-            CommandRegistryAccess registryAccess
-    ) {
+    public static void registerCommands(CommandDispatcher<FabricClientCommandSource> dispatcher) {
         dispatcher.register(
                 ClientCommandManager.literal("ltf")
                         // /ltf -> podstawowe info
@@ -62,7 +52,7 @@ public class ClientCommandRegistration {
 
                                     String headerStr = Messages.get("command.profiles.header");
                                     MutableText finalText = (MutableText) ColorUtils.translateColorCodes(headerStr);
-                                    finalText.append(Text.literal("\n"));
+                                    finalText.append(Text.of("\n"));
 
                                     String activeProfile = ClientFilterManager.getActiveProfile();
                                     for (String profile : profiles) {
@@ -79,11 +69,11 @@ public class ClientCommandRegistration {
                                             Style clickableStyle = Style.EMPTY
                                                     .withClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/ltf profile " + trimmedProfile))
                                                     .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                                                            Text.literal("Kliknij, aby zmienić profil na " + trimmedProfile)));
+                                                            Text.of("Kliknij, aby zmienić profil na " + trimmedProfile)));
                                             lineText.setStyle(clickableStyle);
                                         }
 
-                                        finalText.append(lineText).append(Text.literal("\n"));
+                                        finalText.append(lineText).append(Text.of("\n"));
                                     }
                                     ctx.getSource().sendFeedback(finalText);
                                     return 1;
@@ -156,7 +146,7 @@ public class ClientCommandRegistration {
                                     String msgHeader = Messages.format("command.list.header", Map.of("profile", activeProfile));
                                     MutableText header = (MutableText) ColorUtils.translateColorCodes(msgHeader);
 
-                                    MutableText finalText = Text.empty();
+                                    MutableText finalText = (MutableText) Text.of("");
                                     for (String item : items) {
                                         String removeIconStr = Messages.get("list.icon.remove");
                                         String removeIconHover = Messages.get("list.icon.remove.hover");
@@ -165,15 +155,15 @@ public class ClientCommandRegistration {
                                                 Style.EMPTY.withClickEvent(new ClickEvent(
                                                                 ClickEvent.Action.RUN_COMMAND, "/ltf remove " + item))
                                                         .withHoverEvent(new HoverEvent(
-                                                                HoverEvent.Action.SHOW_TEXT, Text.literal(removeIconHover + item)))
+                                                                HoverEvent.Action.SHOW_TEXT, Text.of(removeIconHover + item)))
                                         );
 
                                         String itemLineStr = Messages.format("list.item.line", Map.of("item", item));
                                         MutableText itemLine = (MutableText) ColorUtils.translateColorCodes(itemLineStr);
 
-                                        MutableText lineText = Text.empty()
-                                                .append(removeIcon).append(Text.literal(" "))
-                                                .append(itemLine).append(Text.literal("\n"));
+                                        MutableText lineText = ((MutableText) Text.of(""))
+                                                .append(removeIcon).append(Text.of(" "))
+                                                .append(itemLine).append(Text.of("\n"));
                                         finalText.append(lineText);
                                     }
 

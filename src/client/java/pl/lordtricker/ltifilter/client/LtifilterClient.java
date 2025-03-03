@@ -1,6 +1,9 @@
 package pl.lordtricker.ltifilter.client;
 
+import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.minecraft.client.MinecraftClient;
 import pl.lordtricker.ltifilter.client.command.ClientCommandRegistration;
@@ -48,7 +51,8 @@ public class LtifilterClient implements ClientModInitializer {
 			}
 		});
 
-		ClientCommandRegistration.registerCommands();
+		CommandDispatcher<FabricClientCommandSource> dispatcher = ClientCommandManager.DISPATCHER;
+		ClientCommandRegistration.registerCommands(dispatcher);
 	}
 
 	public static String getServerAddress() {
