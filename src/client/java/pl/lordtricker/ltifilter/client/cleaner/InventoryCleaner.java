@@ -2,7 +2,7 @@ package pl.lordtricker.ltifilter.client.cleaner;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.screen.slot.SlotActionType;
 import pl.lordtricker.ltifilter.client.filter.ClientFilterManager;
 
@@ -47,7 +47,7 @@ public class InventoryCleaner {
             int slot = firstThrowSlot + ((currentSlot - firstThrowSlot + j) % throwableSlotsCount);
             ItemStack stack = inventory.getStack(slot);
             if (!stack.isEmpty()) {
-                String id = Registries.ITEM.getId(stack.getItem()).toString();
+                String id = Registry.ITEM.getId(stack.getItem()).toString();
                 if (itemsToKeep.contains(id)) {
                     continue;
                 }

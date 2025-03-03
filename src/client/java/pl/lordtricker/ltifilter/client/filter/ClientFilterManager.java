@@ -1,7 +1,7 @@
 package pl.lordtricker.ltifilter.client.filter;
 
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import pl.lordtricker.ltifilter.client.config.FilterEntry;
 import pl.lordtricker.ltifilter.client.config.ServerEntry;
 import pl.lordtricker.ltifilter.client.config.ServersConfig;
@@ -107,7 +107,7 @@ public class ClientFilterManager {
      */
     public static boolean shouldRenderItemBeam(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
-        String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+        String itemId = Registry.ITEM.getId(stack.getItem()).toString();
         List<String> allowed = getItems(getActiveProfile());
         return allowed.contains(itemId);
     }

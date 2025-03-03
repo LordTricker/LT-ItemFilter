@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
@@ -109,9 +110,9 @@ public class ClientCommandRegistration {
                                             String remaining = builder.getRemaining().toLowerCase();
 
                                             if (remaining.contains("minecraft:")) {
-                                                var allItemIds = net.minecraft.registry.Registries.ITEM.getIds();
+                                                Iterable<net.minecraft.util.Identifier> allItemIds = net.minecraft.util.registry.Registry.ITEM.getIds();
 
-                                                for (var itemId : allItemIds) {
+                                                for (net.minecraft.util.Identifier itemId : allItemIds) {
                                                     String asString = itemId.toString();
                                                     if (asString.contains(remaining)) {
                                                         builder.suggest(asString);
