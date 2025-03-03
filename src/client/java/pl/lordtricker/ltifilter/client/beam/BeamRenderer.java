@@ -47,6 +47,7 @@ public abstract class BeamRenderer extends RenderLayer {
         stack.pop();
     }
 
+
     /**
      * Rysuje jedną pionową ściankę (quad) beamu od y=0 do y=beamHeight.
      * Parametry (x1, z1) i (x2, z2) określają dolną krawędź.
@@ -75,7 +76,8 @@ public abstract class BeamRenderer extends RenderLayer {
                 .texture(u, v)
                 .overlay(OverlayTexture.DEFAULT_UV)
                 .light(15728880)
-                .normal(entry, 0.0F, 1.0F, 0.0F);
+                .normal(entry.getNormalMatrix(), 0.0F, 1.0F, 0.0F)
+                .next();
     }
 
     /**
