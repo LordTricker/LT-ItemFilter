@@ -14,9 +14,9 @@ public class ToggleFilter {
 
     public static void init() {
         toggleFilterKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.ltxb.toggle_filter",
+                "Włączenie filtracji itemów",
                 GLFW.GLFW_KEY_G,
-                "category.ltxb"
+                "LT-Mods binds"
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
