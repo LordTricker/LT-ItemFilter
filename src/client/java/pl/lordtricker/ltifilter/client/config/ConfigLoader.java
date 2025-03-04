@@ -27,8 +27,6 @@ public class ConfigLoader {
 
         try (Reader reader = Files.newBufferedReader(configFile)) {
             ServersConfig config = GSON.fromJson(reader, ServersConfig.class);
-            if (config != null && config.servers != null) {
-            }
             return config;
         } catch (IOException e) {
             e.printStackTrace();
@@ -51,6 +49,20 @@ public class ConfigLoader {
         ServersConfig cfg = new ServersConfig();
         cfg.defaultProfile = "default";
 
+        // Ustawienia beama
+        cfg.beamSettings.hexColor = "#80ccff";
+        cfg.beamSettings.alpha = 1.0f;
+        cfg.beamSettings.height = 1.0f;
+        cfg.beamSettings.radius = 0.05f;
+        cfg.beamSettings.verticalOffset = 0.0f;
+
+        // Ustawienia czyszczenia ekwipunku (cleanera)
+        cfg.cleanerSettings.throwIntervalTicks = 2;
+        cfg.cleanerSettings.blockDurationMs = 200;
+        // cfg.cleanerSettings.pickupSound = "minecraft:entity.experience_orb.pickup";
+        // cfg.cleanerSettings.pickupSoundDelayTicks = 2;
+
+        // Przykładowe wpisy serwerowe
         ServerEntry server1 = new ServerEntry();
         server1.domains = List.of("minestar.pl", "anarchia.gg", "tryhc.net", "rapy.pl");
         server1.profileName = "pvp";

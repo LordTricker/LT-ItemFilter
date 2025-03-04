@@ -2,6 +2,7 @@ package pl.lordtricker.ltifilter.client.filter;
 
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import pl.lordtricker.ltifilter.client.LtifilterClient;
 import pl.lordtricker.ltifilter.client.config.FilterEntry;
 import pl.lordtricker.ltifilter.client.config.ServerEntry;
 import pl.lordtricker.ltifilter.client.config.ServersConfig;
@@ -14,10 +15,10 @@ public class ClientFilterManager {
 
     /**
      * Wczytuje dane z configu (ServersConfig) do allProfiles.
-     * Wywoływane np. przy starcie gry albo przy /lts config reload.
+     * Wywoływane np. przy starcie gry albo przy /ltf config reload.
      */
     public static void loadFromConfig(ServersConfig serversConfig) {
-        allProfiles.clear();
+        clearAllProfiles();
         for (ServerEntry entry : serversConfig.servers) {
             String profileName = entry.profileName;
             allProfiles.putIfAbsent(profileName, new ArrayList<>());
@@ -96,6 +97,46 @@ public class ClientFilterManager {
             }
         }
         return null;
+    }
+
+    /**
+     * Czyści wszystkie profile.
+     */
+    public static void clearAllProfiles() {
+        allProfiles.clear();
+    }
+
+    /**
+     * Znajduje wpis serwera (ServerEntry) na podstawie adresu.
+     */
+    private static ServerEntry findServerEntryByAddress(ServersConfig serversConfig, String address) {
+        if (serversConfig == null || serversConfig.servers == null)
+            return null;
+        for (ServerEntry entry : serversConfig.servers) {
+            for (String domain : entry.domains) {
+                if (address.equalsIgnoreCase(domain) ||
+                        address.toLowerCase().endsWith("." + domain.toLowerCase())) {
+                    return entry;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Reinicjalizuje profile na podstawie configu.
+     * Czyści stare profile, ładuje nowe filtry oraz ustawia aktywny profil
+     * w zależności od adresu serwera lub profilu domyślnego.
+     */
+    public static void reinitProfilesFromConfig(ServersConfig serversConfig) {
+        loadFromConfig(serversConfig);
+        String address = LtifilterClient.getServerAddress();
+        ServerEntry serverEntry = findServerEntryByAddress(serversConfig, address);
+        if (serverEntry != null) {
+            setActiveProfile(serverEntry.profileName);
+        } else {
+            setActiveProfile(serversConfig.defaultProfile);
+        }
     }
 
     /**

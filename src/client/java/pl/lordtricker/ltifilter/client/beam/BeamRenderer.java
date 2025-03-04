@@ -5,6 +5,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.RotationAxis;
 import org.joml.Matrix4f;
+import pl.lordtricker.ltifilter.client.LtifilterClient;
+import pl.lordtricker.ltifilter.client.config.BeamSettings;
 
 public abstract class BeamRenderer extends RenderLayer {
     private static final Identifier BEAM_TEXTURE = Identifier.tryParse("ltifilter:textures/lt-beam.png");
@@ -23,34 +25,44 @@ public abstract class BeamRenderer extends RenderLayer {
      * @param worldTime Aktualny czas świata.
      */
     public static void renderBeam(MatrixStack stack, VertexConsumerProvider buffer, float pticks, long worldTime) {
-        float beamAlpha = 1f;      // stała wartość opacity
-        float beamHeight = 1f;  // wysokość słupa
-        float radius = 0.05f;      // promień beamu
-
-        // Kolor – jasno niebieski
-        float red = 0.5f, green = 0.8f, blue = 1.0f;
+        BeamSettings settings = LtifilterClient.serversConfig.beamSettings;
+        float[] rgb = hexToRgb(settings.hexColor);
+        float red = rgb[0], green = rgb[1], blue = rgb[2];
+        float beamAlpha = settings.alpha;
+        float beamHeight = settings.height;
+        float radius = settings.radius;
+        float verticalOffset = settings.verticalOffset;
 
         stack.push();
+        // Podniesienie beama o zadaną wartość offsetu
+        stack.translate(0, verticalOffset, 0);
         long currentTime = System.currentTimeMillis();
         float rotationDegrees = ((currentTime % 10000) / 10000.0f) * 360.0f;
         rotationDegrees += pticks;
-
         stack.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
 
         VertexConsumer consumer = buffer.getBuffer(BEAM_LAYER);
-
         renderSide(stack, consumer, -radius, -radius,  radius, -radius, red, green, blue, beamAlpha, beamHeight);
         renderSide(stack, consumer,  radius, -radius,  radius,  radius, red, green, blue, beamAlpha, beamHeight);
         renderSide(stack, consumer,  radius,  radius, -radius,  radius, red, green, blue, beamAlpha, beamHeight);
         renderSide(stack, consumer, -radius,  radius, -radius, -radius, red, green, blue, beamAlpha, beamHeight);
-
         stack.pop();
     }
 
     /**
-     * Rysuje jedną pionową ściankę (quad) beamu od y=0 do y=beamHeight.
-     * Parametry (x1, z1) i (x2, z2) określają dolną krawędź.
+     * Konwertuje wartość hex (np. "#80ccff") na tablicę float z wartościami RGB (w zakresie 0.0-1.0).
      */
+    private static float[] hexToRgb(String hex) {
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+        int color = Integer.parseInt(hex, 16);
+        float r = ((color >> 16) & 0xFF) / 255.0f;
+        float g = ((color >> 8) & 0xFF) / 255.0f;
+        float b = (color & 0xFF) / 255.0f;
+        return new float[]{r, g, b};
+    }
+
     private static void renderSide(MatrixStack stack, VertexConsumer consumer,
                                    float x1, float z1, float x2, float z2,
                                    float r, float g, float b, float alpha,
@@ -63,9 +75,6 @@ public abstract class BeamRenderer extends RenderLayer {
         addVertex(consumer, entry, pose, x1, height, z1, r, g, b, alpha, 0f, 1f);
     }
 
-    /**
-     * Dodaje wierzchołek do bufora. Używamy metody vertex(...) i na końcu wywołujemy next().
-     */
     private static void addVertex(VertexConsumer consumer, MatrixStack.Entry entry, Matrix4f pose,
                                   float x, float y, float z,
                                   float r, float g, float b, float a,
@@ -78,9 +87,6 @@ public abstract class BeamRenderer extends RenderLayer {
                 .normal(entry, 0.0F, 1.0F, 0.0F);
     }
 
-    /**
-     * Tworzy niestandardowy RenderLayer dla beamu.
-     */
     private static RenderLayer createBeamLayer() {
         RenderLayer.MultiPhaseParameters params = RenderLayer.MultiPhaseParameters.builder()
                 .texture(new RenderPhase.Texture(BEAM_TEXTURE, false, false))

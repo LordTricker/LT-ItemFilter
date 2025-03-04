@@ -206,7 +206,7 @@ public class ClientCommandRegistration {
                                         .executes(ctx -> {
                                             // Przeładuj config
                                             LtifilterClient.serversConfig = ConfigLoader.loadConfig();
-                                            ClientFilterManager.loadFromConfig(LtifilterClient.serversConfig);
+                                            ClientFilterManager.reinitProfilesFromConfig(LtifilterClient.serversConfig);
 
                                             // Po przeładowaniu sprawdzamy serwer
                                             String address = LtifilterClient.getServerAddress();
