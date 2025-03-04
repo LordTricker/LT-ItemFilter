@@ -5,6 +5,8 @@ import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Matrix4f;
 import net.minecraft.util.math.Quaternion;
+import pl.lordtricker.ltifilter.client.LtifilterClient;
+import pl.lordtricker.ltifilter.client.config.BeamSettings;
 
 public abstract class BeamRenderer extends RenderLayer {
     private static final Identifier BEAM_TEXTURE = Identifier.tryParse("ltifilter:textures/lt-beam.png");
@@ -23,16 +25,17 @@ public abstract class BeamRenderer extends RenderLayer {
      * @param worldTime Aktualny czas świata.
      */
     public static void renderBeam(MatrixStack stack, VertexConsumerProvider buffer, float pticks, long worldTime) {
-        float beamAlpha = 0.7f;      // alfa (0-1)
-        float beamHeight = 0.65f;     // wysokość słupa
-        float radius = 0.04f;      // promień beamu
-
-        // Kolor – jasno niebieski
-        float red = 0.5f, green = 0.8f, blue = 1.0f;
+        BeamSettings settings = LtifilterClient.serversConfig.beamSettings;
+        float[] rgb = hexToRgb(settings.hexColor);
+        float red = rgb[0], green = rgb[1], blue = rgb[2];
+        float beamAlpha = settings.alpha;
+        float beamHeight = settings.height;
+        float radius = settings.radius;
+        float verticalOffset = settings.verticalOffset;
 
         stack.push();
         // Przesuń beam wyżej – tutaj dodajemy przesunięcie w górę o 1 jednostkę, dostosuj według potrzeb
-        stack.translate(0.0, 0.55, 0.0);
+        stack.translate(0, verticalOffset, 0);
 
         long currentTime = System.currentTimeMillis();
         float rotationDegrees = ((currentTime % 10000) / 10000.0f) * 360.0f;
@@ -49,6 +52,17 @@ public abstract class BeamRenderer extends RenderLayer {
         renderSide(stack, consumer, -radius,  radius, -radius, -radius, red, green, blue, beamAlpha, beamHeight);
 
         stack.pop();
+    }
+
+    private static float[] hexToRgb(String hex) {
+        if (hex.startsWith("#")) {
+            hex = hex.substring(1);
+        }
+        int color = Integer.parseInt(hex, 16);
+        float r = ((color >> 16) & 0xFF) / 255.0f;
+        float g = ((color >> 8) & 0xFF) / 255.0f;
+        float b = (color & 0xFF) / 255.0f;
+        return new float[]{r, g, b};
     }
 
     /**
