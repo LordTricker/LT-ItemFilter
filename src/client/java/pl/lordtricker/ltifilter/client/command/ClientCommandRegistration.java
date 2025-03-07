@@ -6,18 +6,22 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
+import net.minecraft.registry.Registries;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 import pl.lordtricker.ltifilter.client.LtifilterClient;
+import pl.lordtricker.ltifilter.client.config.FilterEntry;
 import pl.lordtricker.ltifilter.client.filter.ClientFilterManager;
 import pl.lordtricker.ltifilter.client.config.ConfigLoader;
+import pl.lordtricker.ltifilter.client.filter.FilterCommandHandler;
 import pl.lordtricker.ltifilter.client.keybinding.ToggleFilter;
 import pl.lordtricker.ltifilter.client.util.ColorUtils;
 import pl.lordtricker.ltifilter.client.util.Messages;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -88,7 +92,6 @@ public class ClientCommandRegistration {
                                     return 1;
                                 })
                         )
-
                         // /ltf profile <nazwa>
                         .then(ClientCommandManager.literal("profile")
                                 .then(ClientCommandManager.argument("profile", StringArgumentType.word())
@@ -102,18 +105,59 @@ public class ClientCommandRegistration {
                                         })
                                 )
                         )
-                        // /ltf add <itemId> z podpowiedziami
+                        // /ltf add <args> z podpowiedziami
                         .then(ClientCommandManager.literal("add")
-                                .then(ClientCommandManager.argument("itemId", StringArgumentType.greedyString())
+                                .then(ClientCommandManager.argument("args", StringArgumentType.greedyString())
                                         .suggests((context, builder) -> {
-                                            String remaining = builder.getRemaining().toLowerCase();
-
-                                            if (remaining.contains("minecraft:")) {
-                                                var allItemIds = net.minecraft.registry.Registries.ITEM.getIds();
-
+                                            String remaining = builder.getRemaining();
+                                            // Znajdź ostatnią spację by oddzielić część liczbową od itemId
+                                            int lastSpace = remaining.lastIndexOf(' ');
+                                            String prefixBefore;
+                                            String prefix;
+                                            if (lastSpace == -1) {
+                                                prefixBefore = "";
+                                                prefix = remaining;
+                                            } else {
+                                                prefixBefore = remaining.substring(0, lastSpace + 1);
+                                                prefix = remaining.substring(lastSpace + 1);
+                                            }
+                                            prefix = prefix.toLowerCase();
+                                            // Podpowiadamy tylko, gdy ostatni token zaczyna się od "minecraft:"
+                                            if (prefix.startsWith("minecraft:")) {
+                                                var allItemIds = Registries.ITEM.getIds();
                                                 for (var itemId : allItemIds) {
                                                     String asString = itemId.toString();
-                                                    if (asString.contains(remaining)) {
+                                                    if (asString.toLowerCase().startsWith(prefix)) {
+                                                        // Sugestia zawiera część liczbową oraz spację, a następnie pełną nazwę itemu
+                                                        builder.suggest(prefixBefore + asString);
+                                                    }
+                                                }
+                                            }
+                                            return builder.buildFuture();
+                                        })
+                                        .executes(ctx -> {
+                                            var player = ctx.getSource().getPlayer();
+                                            String rawArgs = StringArgumentType.getString(ctx, "args");
+
+                                            FilterCommandHandler.CommandResult result = FilterCommandHandler.handleAdd(rawArgs, player);
+                                            Map<String, String> placeholders = new HashMap<>();
+                                            result.placeholders.forEach((key, value) -> placeholders.put(key, String.valueOf(value)));
+                                            String message = Messages.format(result.messageKey, placeholders);
+                                            ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(message));
+                                            return 1;
+                                        })
+                                )
+                        )
+                        // /ltf remove <args>
+                        .then(ClientCommandManager.literal("remove")
+                                .then(ClientCommandManager.argument("args", StringArgumentType.greedyString())
+                                        .suggests((context, builder) -> {
+                                            String remaining = builder.getRemaining().toLowerCase();
+                                            if (remaining.contains("minecraft:")) {
+                                                var allItemIds = Registries.ITEM.getIds();
+                                                for (var itemId : allItemIds) {
+                                                    String asString = itemId.toString();
+                                                    if (asString.startsWith(remaining)) {
                                                         builder.suggest(asString);
                                                     }
                                                 }
@@ -121,27 +165,14 @@ public class ClientCommandRegistration {
                                             return builder.buildFuture();
                                         })
                                         .executes(ctx -> {
-                                            String itemId = StringArgumentType.getString(ctx, "itemId");
-                                            ClientFilterManager.addItem(itemId);
-                                            String activeProfile = ClientFilterManager.getActiveProfile();
+                                            var player = ctx.getSource().getPlayer();
+                                            String rawArgs = StringArgumentType.getString(ctx, "args");
 
-                                            String msg = Messages.format("command.add.success",
-                                                    Map.of("item", itemId, "profile", activeProfile));
-                                            ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(msg));
-                                            return 1;
-                                        })
-                                )
-                        )
-                        // /ltf remove <itemId>
-                        .then(ClientCommandManager.literal("remove")
-                                .then(ClientCommandManager.argument("itemId", StringArgumentType.greedyString())
-                                        .executes(ctx -> {
-                                            String itemId = StringArgumentType.getString(ctx, "itemId");
-                                            ClientFilterManager.removeItem(itemId);
-                                            String activeProfile = ClientFilterManager.getActiveProfile();
-                                            String msg = Messages.format("command.remove.success",
-                                                    Map.of("item", itemId, "profile", activeProfile));
-                                            ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(msg));
+                                            FilterCommandHandler.CommandResult result = FilterCommandHandler.handleRemove(rawArgs, player);
+                                            Map<String, String> placeholders = new HashMap<>();
+                                            result.placeholders.forEach((key, value) -> placeholders.put(key, String.valueOf(value)));
+                                            String message = Messages.format(result.messageKey, placeholders);
+                                            ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(message));
                                             return 1;
                                         })
                                 )
@@ -150,13 +181,13 @@ public class ClientCommandRegistration {
                         .then(ClientCommandManager.literal("list")
                                 .executes(ctx -> {
                                     String activeProfile = ClientFilterManager.getActiveProfile();
-                                    List<String> items = ClientFilterManager.getItems(activeProfile);
+                                    List<FilterEntry> items = ClientFilterManager.getItems(activeProfile);
 
                                     String msgHeader = Messages.format("command.list.header", Map.of("profile", activeProfile));
                                     MutableText header = (MutableText) ColorUtils.translateColorCodes(msgHeader);
 
                                     MutableText finalText = Text.empty();
-                                    for (String item : items) {
+                                    for (FilterEntry item : items) {
                                         String removeIconStr = Messages.get("list.icon.remove");
                                         String removeIconHover = Messages.get("list.icon.remove.hover");
                                         MutableText removeIcon = (MutableText) ColorUtils.translateColorCodes(removeIconStr);
@@ -167,7 +198,7 @@ public class ClientCommandRegistration {
                                                                 HoverEvent.Action.SHOW_TEXT, Text.literal(removeIconHover + item)))
                                         );
 
-                                        String itemLineStr = Messages.format("list.item.line", Map.of("item", item));
+                                        String itemLineStr = Messages.format("list.item.line", Map.of("item", item.toString()));
                                         MutableText itemLine = (MutableText) ColorUtils.translateColorCodes(itemLineStr);
 
                                         MutableText lineText = Text.empty()
@@ -181,8 +212,7 @@ public class ClientCommandRegistration {
                                     return 1;
                                 })
                         )
-
-                        // /ltf help
+                        // /ltf pomoc
                         .then(ClientCommandManager.literal("pomoc")
                                 .executes(ctx -> {
                                     String msg = Messages.get("command.help");
