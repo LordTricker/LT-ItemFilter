@@ -83,16 +83,16 @@ public class ConfigLoader {
         server1.filters.add(new FilterEntry("minecraft:bow", -1));
         server1.filters.add(new FilterEntry("minecraft:crossbow", -1));
         server1.filters.add(new FilterEntry("minecraft:golden_helmet", -1));
-        server1.filters.add(new FilterEntry("minecraft:fireworks", -1));
+        server1.filters.add(new FilterEntry("minecraft:fireworks", 4));
         server1.filters.add(new FilterEntry("minecraft:elytra", -1));
         server1.filters.add(new FilterEntry("minecraft:trident", -1));
         server1.filters.add(new FilterEntry("minecraft:shulker_box", -1));
-        server1.filters.add(new FilterEntry("minecraft:snowball", -1));
+        server1.filters.add(new FilterEntry("minecraft:snowball", 4));
         server1.filters.add(new FilterEntry("minecraft:red_dye", -1));
         server1.filters.add(new FilterEntry("minecraft:arrow", -1));
         server1.filters.add(new FilterEntry("minecraft:chorus_fruit", -1));
-        server1.filters.add(new FilterEntry("minecraft:slime_block", -1));
-        server1.filters.add(new FilterEntry("minecraft:obsidian", 64));
+        server1.filters.add(new FilterEntry("minecraft:slime_block", 2));
+        server1.filters.add(new FilterEntry("minecraft:obsidian", 2));
 
         cfg.servers.add(server1);
 
