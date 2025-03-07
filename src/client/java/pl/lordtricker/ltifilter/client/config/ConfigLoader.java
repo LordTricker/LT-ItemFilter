@@ -26,8 +26,7 @@ public class ConfigLoader {
         }
 
         try (Reader reader = Files.newBufferedReader(configFile)) {
-            ServersConfig config = GSON.fromJson(reader, ServersConfig.class);
-            return config;
+            return GSON.fromJson(reader, ServersConfig.class);
         } catch (IOException e) {
             e.printStackTrace();
             return new ServersConfig();
@@ -59,44 +58,44 @@ public class ConfigLoader {
         // Ustawienia czyszczenia ekwipunku (cleanera)
         cfg.cleanerSettings.throwIntervalTicks = 2;
         cfg.cleanerSettings.blockDurationMs = 200;
-        // cfg.cleanerSettings.pickupSound = "minecraft:entity.experience_orb.pickup";
-        // cfg.cleanerSettings.pickupSoundDelayTicks = 2;
+        cfg.cleanerSettings.doNotCleanSlots = List.of(0);
 
         // Przykładowe wpisy serwerowe
         ServerEntry server1 = new ServerEntry();
         server1.domains = List.of("minestar.pl", "anarchia.gg", "tryhc.net", "rapy.pl");
         server1.profileName = "pvp";
 
-        server1.filters.add(new FilterEntry("minecraft:diamond_pickaxe"));
-        server1.filters.add(new FilterEntry("minecraft:diamond_axe"));
-        server1.filters.add(new FilterEntry("minecraft:diamond_sword"));
-        server1.filters.add(new FilterEntry("minecraft:diamond_helmet"));
-        server1.filters.add(new FilterEntry("minecraft:diamond_chestplate"));
-        server1.filters.add(new FilterEntry("minecraft:diamond_leggings"));
-        server1.filters.add(new FilterEntry("minecraft:diamond_boots"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_pickaxe"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_axe"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_sword"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_helmet"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_chestplate"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_leggings"));
-        server1.filters.add(new FilterEntry("minecraft:netherite_boots"));
-        server1.filters.add(new FilterEntry("minecraft:golden_apple"));
-        server1.filters.add(new FilterEntry("minecraft:enchanted_golden_apple"));
-        server1.filters.add(new FilterEntry("minecraft:ender_pearl"));
-        server1.filters.add(new FilterEntry("minecraft:enchanted_book"));
-        server1.filters.add(new FilterEntry("minecraft:bow"));
-        server1.filters.add(new FilterEntry("minecraft:crossbow"));
-        server1.filters.add(new FilterEntry("minecraft:golden_helmet"));
-        server1.filters.add(new FilterEntry("minecraft:fireworks"));
-        server1.filters.add(new FilterEntry("minecraft:elytra"));
-        server1.filters.add(new FilterEntry("minecraft:trident"));
-        server1.filters.add(new FilterEntry("minecraft:shulker_box"));
-        server1.filters.add(new FilterEntry("minecraft:snowball"));
-        server1.filters.add(new FilterEntry("minecraft:red_dye"));
-        server1.filters.add(new FilterEntry("minecraft:arrow"));
-        server1.filters.add(new FilterEntry("minecraft:chorus_fruit"));
-        server1.filters.add(new FilterEntry("minecraft:slime_block"));
+        server1.filters.add(new FilterEntry("minecraft:diamond_pickaxe", -1));
+        server1.filters.add(new FilterEntry("minecraft:diamond_axe", -1));
+        server1.filters.add(new FilterEntry("minecraft:diamond_sword", -1));
+        server1.filters.add(new FilterEntry("minecraft:diamond_helmet", -1));
+        server1.filters.add(new FilterEntry("minecraft:diamond_chestplate", -1));
+        server1.filters.add(new FilterEntry("minecraft:diamond_leggings", -1));
+        server1.filters.add(new FilterEntry("minecraft:diamond_boots", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_pickaxe", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_axe", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_sword", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_helmet", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_chestplate", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_leggings", -1));
+        server1.filters.add(new FilterEntry("minecraft:netherite_boots", -1));
+        server1.filters.add(new FilterEntry("minecraft:golden_apple", -1));
+        server1.filters.add(new FilterEntry("minecraft:enchanted_golden_apple", -1));
+        server1.filters.add(new FilterEntry("minecraft:ender_pearl", -1));
+        server1.filters.add(new FilterEntry("minecraft:enchanted_book", -1));
+        server1.filters.add(new FilterEntry("minecraft:bow", -1));
+        server1.filters.add(new FilterEntry("minecraft:crossbow", -1));
+        server1.filters.add(new FilterEntry("minecraft:golden_helmet", -1));
+        server1.filters.add(new FilterEntry("minecraft:fireworks", 4));
+        server1.filters.add(new FilterEntry("minecraft:elytra", -1));
+        server1.filters.add(new FilterEntry("minecraft:trident", -1));
+        server1.filters.add(new FilterEntry("minecraft:shulker_box", -1));
+        server1.filters.add(new FilterEntry("minecraft:snowball", 4));
+        server1.filters.add(new FilterEntry("minecraft:red_dye", -1));
+        server1.filters.add(new FilterEntry("minecraft:arrow", -1));
+        server1.filters.add(new FilterEntry("minecraft:chorus_fruit", -1));
+        server1.filters.add(new FilterEntry("minecraft:slime_block", 2));
+        server1.filters.add(new FilterEntry("minecraft:obsidian", 2));
 
         cfg.servers.add(server1);
 

@@ -11,7 +11,7 @@ import java.util.*;
 
 public class ClientFilterManager {
     private static String activeProfile = null;
-    private static final Map<String, List<String>> allProfiles = new HashMap<>();
+    private static final Map<String, List<FilterEntry>> allProfiles = new HashMap<>();
 
     /**
      * Wczytuje dane z configu (ServersConfig) do allProfiles.
@@ -24,7 +24,7 @@ public class ClientFilterManager {
             allProfiles.putIfAbsent(profileName, new ArrayList<>());
             for (FilterEntry fe : entry.filters) {
                 if (fe.material != null && !fe.material.isEmpty()) {
-                    allProfiles.get(profileName).add(fe.material);
+                    allProfiles.get(profileName).add(fe);
                 }
             }
         }
@@ -40,14 +40,12 @@ public class ClientFilterManager {
         for (ServerEntry entry : serversConfig.servers) {
             entry.filters.clear();
         }
-        for (Map.Entry<String, List<String>> profEntry : allProfiles.entrySet()) {
+        for (Map.Entry<String, List<FilterEntry>> profEntry : allProfiles.entrySet()) {
             String profileName = profEntry.getKey();
-            List<String> items = profEntry.getValue();
+            List<FilterEntry> items = profEntry.getValue();
             ServerEntry serverEntry = findServerEntryByProfile(serversConfig, profileName);
             if (serverEntry != null) {
-                for (String material : items) {
-                    serverEntry.filters.add(new FilterEntry(material));
-                }
+                serverEntry.filters.addAll(items);
             }
         }
     }
@@ -61,27 +59,44 @@ public class ClientFilterManager {
         allProfiles.putIfAbsent(profile, new ArrayList<>());
     }
 
+    /**
+     * Dodaje przedmiot bez limitu.
+     */
     public static void addItem(String material) {
-        List<String> items = allProfiles.get(activeProfile);
+        addItem(material, -1);
+    }
+
+    /**
+     * Dodaje przedmiot do aktywnego profilu wraz z limitem.
+     * Jeśli maxCount == -1, to oznacza brak limitu.
+     */
+    public static void addItem(String material, int maxCount) {
+        List<FilterEntry> items = allProfiles.get(activeProfile);
         if (items == null) {
             items = new ArrayList<>();
             allProfiles.put(activeProfile, items);
         }
-        items.add(material);
+        items.add(new FilterEntry(material, maxCount));
     }
 
+    /**
+     * Usuwa przedmiot z aktywnego profilu.
+     */
     public static void removeItem(String material) {
-        List<String> items = allProfiles.get(activeProfile);
+        List<FilterEntry> items = allProfiles.get(activeProfile);
         if (items != null) {
-            items.removeIf(s -> s.equalsIgnoreCase(material));
+            items.removeIf(fe -> fe.material.equalsIgnoreCase(material));
         }
     }
 
-    public static List<String> getItems(String profile) {
+    /**
+     * Zwraca listę filtrów (FilterEntry) dla danego profilu.
+     */
+    public static List<FilterEntry> getItems(String profile) {
         return allProfiles.getOrDefault(profile, Collections.emptyList());
     }
 
-    public static Map<String, List<String>> getAllProfiles() {
+    public static Map<String, List<FilterEntry>> getAllProfiles() {
         return allProfiles;
     }
 
@@ -106,9 +121,6 @@ public class ClientFilterManager {
         allProfiles.clear();
     }
 
-    /**
-     * Znajduje wpis serwera (ServerEntry) na podstawie adresu.
-     */
     private static ServerEntry findServerEntryByAddress(ServersConfig serversConfig, String address) {
         if (serversConfig == null || serversConfig.servers == null)
             return null;
@@ -149,7 +161,26 @@ public class ClientFilterManager {
     public static boolean shouldRenderItemBeam(ItemStack stack) {
         if (stack == null || stack.isEmpty()) return false;
         String itemId = Registry.ITEM.getId(stack.getItem()).toString();
-        List<String> allowed = getItems(getActiveProfile());
-        return allowed.contains(itemId);
+        List<FilterEntry> allowed = getItems(getActiveProfile());
+        for (FilterEntry fe : allowed) {
+            if (fe.material.equalsIgnoreCase(itemId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sprawdza, czy przedmiot o danym identyfikatorze znajduje się w filtrach danego profilu.
+     */
+    public static boolean hasItem(String profile, String material) {
+        List<FilterEntry> items = allProfiles.get(profile);
+        if (items == null) return false;
+        for (FilterEntry fe : items) {
+            if (fe.material.equalsIgnoreCase(material)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
