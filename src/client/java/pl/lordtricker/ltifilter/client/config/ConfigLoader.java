@@ -56,7 +56,7 @@ public class ConfigLoader {
 
         cfg.cleanerSettings.throwIntervalTicks = 1;
         cfg.cleanerSettings.blockDurationMs = 200;
-        cfg.cleanerSettings.doNotCleanSlots = List.of(12, 15, 20);
+        cfg.cleanerSettings.doNotCleanSlots = List.of(1);
 
         ServerEntry server1 = new ServerEntry();
         server1.domains = List.of("minestar.pl", "anarchia.gg", "tryhc.net", "rapy.pl");
