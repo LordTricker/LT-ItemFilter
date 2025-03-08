@@ -18,6 +18,7 @@ public class InventoryCleaner {
     private static int currentSlot = 9;
     private static boolean throwBlocked = false;
     private static long blockEndTime = 0;
+    private static int movementDelayTicks = 0;
 
     /**
      * Metoda czyszcząca ekwipunek. Dla każdego slotu (domyślnie 9-35, poza slotami wykluczonymi z configu):
@@ -27,6 +28,8 @@ public class InventoryCleaner {
      * 3. Dla przedmiotów w filtrze z maxCount > 0 usuwa nadmiarowe sloty (jeśli liczba slotów z danym itemem > maxCount).
      *
      * Gdy throwIntervalTicks > 0, usuwa tylko jeden slot na wywołanie (co X ticków).
+     *
+     * Dodatkowo – jeśli gracz się porusza, wyrzucanie zostaje odroczone o 20 ticków.
      */
     public static void cleanInventory(MinecraftClient client) {
         if (client.player == null) return;
@@ -40,6 +43,16 @@ public class InventoryCleaner {
 
         PlayerEntity player = client.player;
         var inventory = player.getInventory();
+
+        if (client.options.forwardKey.isPressed() || client.options.backKey.isPressed() ||
+                client.options.leftKey.isPressed() || client.options.rightKey.isPressed()) {
+            movementDelayTicks = 10;
+            return;
+        }
+        else if (movementDelayTicks > 0) {
+            movementDelayTicks--;
+            return;
+        }
 
         List<FilterEntry> allowedEntries = ClientFilterManager.getItems(ClientFilterManager.getActiveProfile());
         Map<String, FilterEntry> allowedMap = new HashMap<>();
