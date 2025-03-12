@@ -144,6 +144,11 @@
     "&8[&3L&bT &fItemFilter&8] &7Dodano &a%count%&7 przedmiotów z ekwipunku &8(&2bez limitu&8) &7do profilu &b%profile%&7.",
     " "
   ],
+  "command.add.eq.count.success": [
+    " ",
+    "&8[&3L&bT &fItemFilter&8] &7Dodano &a%count%&7 przedmiotów z ekwipunku do profilu &b%profile%&7.",
+    " "
+  ],
   "command.add.quantity.success": [
     " ",
     "&8[&3L&bT &fItemFilter&8] &7Dodano przedmiot &a%item% &7z limitem &2%quantity% &7a do profilu &b%profile%&7.",

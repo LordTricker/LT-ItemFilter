@@ -5,10 +5,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
- * Klasa pomocnicza do obsługi logiki komend /ltr add ... i /ltr remove ...
+ * Klasa pomocnicza do obsługi logiki komend /ltf add ... i /ltf remove ...
  * Zwraca obiekt CommandResult, który zawiera:
  *   - klucz wiadomości z messages.json
  *   - mapę placeholderów (np. {item}, {profile}, {count}, {quantity}, itp.)
@@ -36,7 +38,7 @@ public class FilterCommandHandler {
     }
 
     /**
-     * Obsługa komendy /ltr add <...>
+     * Obsługa komendy /ltf add <...>
      *
      * @param rawArgs  – np. "hand", "eq", "64 hand", "minecraft:obsidian", itp.
      * @param player   – gracz, który wywołał komendę
@@ -89,26 +91,25 @@ public class FilterCommandHandler {
             }
 
         } else if ("eq".equalsIgnoreCase(target)) {
-            int countAdded = 0;
+            Map<String, Integer> slotCounts = new HashMap<>();
             for (int i = 0; i < player.getInventory().size(); i++) {
                 ItemStack stack = player.getInventory().getStack(i);
                 if (!stack.isEmpty()) {
                     String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-                    ClientFilterManager.addItem(itemId, maxCount);
-                    countAdded++;
+                    slotCounts.put(itemId, slotCounts.getOrDefault(itemId, 0) + 1);
                 }
             }
-            if (maxCount > -1) {
-                return new CommandResult(
-                        "command.add.eq.quantity.success",
-                        Map.of("count", countAdded, "quantity", maxCount, "profile", activeProfile)
-                );
-            } else {
-                return new CommandResult(
-                        "command.add.eq.noQuantity.success",
-                        Map.of("count", countAdded, "profile", activeProfile)
-                );
+            int countAdded = 0;
+            for (Map.Entry<String, Integer> entry : slotCounts.entrySet()) {
+                String itemId = entry.getKey();
+                int count = entry.getValue();
+                ClientFilterManager.addItem(itemId, count);
+                countAdded++;
             }
+            return new CommandResult(
+                    "command.add.eq.count.success",
+                    Map.of("count", countAdded, "profile", activeProfile)
+            );
 
         } else {
             ClientFilterManager.addItem(target, maxCount);
@@ -128,7 +129,7 @@ public class FilterCommandHandler {
     }
 
     /**
-     * Obsługa komendy /ltr remove <...>
+     * Obsługa komendy /ltf remove <...>
      * Przykładowo: "hand", "eq", "minecraft:obsidian"
      */
     public static CommandResult handleRemove(String rawArgs, PlayerEntity player) {
@@ -157,15 +158,19 @@ public class FilterCommandHandler {
             );
 
         } else if ("eq".equalsIgnoreCase(target)) {
-            int countRemoved = 0;
+            Set<String> distinctItems = new HashSet<>();
             for (int i = 0; i < player.getInventory().size(); i++) {
                 ItemStack stack = player.getInventory().getStack(i);
                 if (!stack.isEmpty()) {
                     String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-                    if (ClientFilterManager.hasItem(activeProfile, itemId)) {
-                        ClientFilterManager.removeItem(itemId);
-                        countRemoved++;
-                    }
+                    distinctItems.add(itemId);
+                }
+            }
+            int countRemoved = 0;
+            for (String itemId : distinctItems) {
+                if (ClientFilterManager.hasItem(activeProfile, itemId)) {
+                    ClientFilterManager.removeItem(itemId);
+                    countRemoved++;
                 }
             }
             return new CommandResult(

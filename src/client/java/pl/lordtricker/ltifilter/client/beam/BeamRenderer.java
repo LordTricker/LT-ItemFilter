@@ -88,8 +88,8 @@ public abstract class BeamRenderer extends RenderLayer {
     }
 
     private static RenderLayer createBeamLayer() {
-        RenderLayer.MultiPhaseParameters params = RenderLayer.MultiPhaseParameters.builder()
-                .texture(new RenderPhase.Texture(BEAM_TEXTURE, false, false))
+        MultiPhaseParameters params = MultiPhaseParameters.builder()
+                .texture(new Texture(BEAM_TEXTURE, false, false))
                 .lightmap(RenderLayer.ENABLE_LIGHTMAP)
                 .transparency(RenderLayer.TRANSLUCENT_TRANSPARENCY)
                 .program(RenderLayer.TRANSLUCENT_PROGRAM)
