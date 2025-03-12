@@ -159,7 +159,12 @@ public class ClientFilterManager {
         }
 
         PlayerEntity player = MinecraftClient.getInstance().player;
-        List<Text> tooltipLines = stack.getTooltip(player, TooltipContext.BASIC);
+        List<Text> tooltipLines = stack.getTooltip(player, new TooltipContext() {
+            @Override
+            public boolean isAdvanced() {
+                return false;
+            }
+        });
         StringBuilder tooltipBuilder = new StringBuilder();
         for (Text line : tooltipLines) {
             String plain = line.getString();
