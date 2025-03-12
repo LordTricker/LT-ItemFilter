@@ -116,7 +116,7 @@
   ],
   "command.add.syntaxError": [
     " ",
-    "&8[&3L&bT &fItemFilter&8] &cNiepoprawna składnia&7. Użyj&8: &b/ltr add <maxCount> <hand|eq|itemId>",
+    "&8[&3L&bT &fItemFilter&8] &cNiepoprawna składnia&7. Użyj&8: &f/ltf add <maxCount> <hand|eq|itemId>",
     " "
   ],
   "command.add.hand.empty": [
@@ -161,7 +161,7 @@
   ],
   "command.remove.syntaxError": [
     " ",
-    "&8[&3L&bT &fItemFilter&8] &cNiepoprawna składnia&7. Użyj: &f/ltr remove <hand|eq|itemId>",
+    "&8[&3L&bT &fItemFilter&8] &cNiepoprawna składnia&7. Użyj: &f/ltf remove <hand|eq|itemId>",
     " "
   ],
   "command.remove.hand.empty": [
