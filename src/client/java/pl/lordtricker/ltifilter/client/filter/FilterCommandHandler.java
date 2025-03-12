@@ -3,23 +3,16 @@ package pl.lordtricker.ltifilter.client.filter;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
+import pl.lordtricker.ltifilter.client.config.FilterEntry;
+import pl.lordtricker.ltifilter.client.util.CompositeKeyUtil;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-/**
- * Klasa pomocnicza do obsługi logiki komend /ltr add ... i /ltr remove ...
- * Zwraca obiekt CommandResult, który zawiera:
- *   - klucz wiadomości z messages.json
- *   - mapę placeholderów (np. {item}, {profile}, {count}, {quantity}, itp.)
- */
 public class FilterCommandHandler {
 
-    /**
-     * Obiekt, który pozwala zwrócić:
-     *  - klucz wiadomości z pliku messages.json,
-     *  - placeholdery do formatowania.
-     */
     public static class CommandResult {
         public String messageKey;
         public Map<String, Object> placeholders = new HashMap<>();
@@ -35,25 +28,25 @@ public class FilterCommandHandler {
         }
     }
 
-    /**
-     * Obsługa komendy /ltr add <...>
-     *
-     * @param rawArgs  – np. "hand", "eq", "64 hand", "minecraft:obsidian", itp.
-     * @param player   – gracz, który wywołał komendę
-     * @return CommandResult zawierający klucz wiadomości oraz placeholdery.
-     */
+    private static final Pattern NEWER_PATTERN = Pattern.compile(
+            "ResourceKey\\[\\s*minecraft:enchantment\\s*/\\s*minecraft:([^\\]]+)\\]\\s*=.*?=>\\s*(\\d+)"
+    );
+    private static final Pattern OLDER_PATTERN = Pattern.compile(
+            "\\{id:\"([^\"]+)\",lvl:(\\d+)s\\}"
+    );
+
     public static CommandResult handleAdd(String rawArgs, PlayerEntity player) {
         if (player == null) {
             return new CommandResult("command.error.playerOnly");
         }
 
-        String[] split = rawArgs.trim().split("\\s+");
+        String[] split = rawArgs.trim().split("\\s+", 2);
         int maxCount = -1;
         String target = null;
 
         if (split.length == 1) {
             target = split[0];
-        } else if (split.length >= 2) {
+        } else {
             try {
                 maxCount = Integer.parseInt(split[0]);
                 target = split[1];
@@ -62,7 +55,7 @@ public class FilterCommandHandler {
             }
         }
 
-        if (target == null) {
+        if (target == null || target.isEmpty()) {
             return new CommandResult("command.add.syntaxError");
         }
 
@@ -73,74 +66,114 @@ public class FilterCommandHandler {
             if (handStack.isEmpty()) {
                 return new CommandResult("command.add.hand.empty");
             }
-            String itemId = Registries.ITEM.getId(handStack.getItem()).toString();
-            ClientFilterManager.addItem(itemId, maxCount);
+            String materialId = Registries.ITEM.getId(handStack.getItem()).toString();
+
+            String customName;
+            if (handStack.hasCustomName()) {
+                customName = handStack.getName().getString();
+            } else {
+                customName = materialId;
+            }
+
+            String rawEnchants = handStack.getEnchantments().toString();
+            StringBuilder enchantBuilder = new StringBuilder();
+            boolean foundAny = false;
+            Pattern NEWER_PATTERN = Pattern.compile("ResourceKey\\[\\s*minecraft:enchantment\\s*/\\s*minecraft:([^\\]]+)\\]\\s*=.*?=>\\s*(\\d+)");
+            Matcher matcherNew = NEWER_PATTERN.matcher(rawEnchants);
+            while (matcherNew.find()) {
+                foundAny = true;
+                String enchId = matcherNew.group(1).trim();
+                String levelStr = matcherNew.group(2).trim();
+                String shortEnchant = enchId + levelStr;
+                String mappedEnchant = pl.lordtricker.ltifilter.client.util.EnchantMapper.mapEnchant(shortEnchant, true);
+                if (enchantBuilder.length() > 0) {
+                    enchantBuilder.append(",");
+                }
+                enchantBuilder.append(mappedEnchant);
+            }
+            if (!foundAny) {
+                Pattern OLDER_PATTERN = Pattern.compile("\\{id:\"([^\"]+)\",lvl:(\\d+)s\\}");
+                Matcher matcherOld = OLDER_PATTERN.matcher(rawEnchants);
+                while (matcherOld.find()) {
+                    String enchId = matcherOld.group(1).trim();
+                    String levelStr = matcherOld.group(2).trim();
+                    if (enchId.startsWith("minecraft:")) {
+                        enchId = enchId.substring("minecraft:".length());
+                    }
+                    String shortEnchant = enchId + levelStr;
+                    String mappedEnchant = pl.lordtricker.ltifilter.client.util.EnchantMapper.mapEnchant(shortEnchant, false);
+                    if (enchantBuilder.length() > 0) {
+                        enchantBuilder.append(",");
+                    }
+                    enchantBuilder.append(mappedEnchant);
+                }
+            }
+            String enchantmentsString = enchantBuilder.toString();
+
+            String baseNameToUse = customName.equalsIgnoreCase(materialId) ? materialId : customName;
+
+            FilterEntry entry = new FilterEntry(baseNameToUse, "", materialId, enchantmentsString, maxCount);
+            ClientFilterManager.addItem(entry);
 
             if (maxCount > -1) {
                 return new CommandResult(
                         "command.add.hand.quantity.success",
-                        Map.of("item", itemId, "quantity", maxCount, "profile", activeProfile)
+                        Map.of("item", entry.toString(), "quantity", maxCount, "profile", activeProfile)
                 );
             } else {
                 return new CommandResult(
                         "command.add.hand.noQuantity.success",
-                        Map.of("item", itemId, "profile", activeProfile)
+                        Map.of("item", entry.toString(), "profile", activeProfile)
                 );
             }
-
         } else if ("eq".equalsIgnoreCase(target)) {
-            int countAdded = 0;
+            Map<String, Integer> slotCounts = new HashMap<>();
             for (int i = 0; i < player.getInventory().size(); i++) {
                 ItemStack stack = player.getInventory().getStack(i);
                 if (!stack.isEmpty()) {
-                    String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-                    ClientFilterManager.addItem(itemId, maxCount);
-                    countAdded++;
+                    String materialId = Registries.ITEM.getId(stack.getItem()).toString();
+                    FilterEntry entry = new FilterEntry(materialId, "", materialId, "", -1);
+                    String key = entry.baseName + "|" + entry.lore + "|" + entry.material + "|" + entry.enchants;
+                    slotCounts.put(key, slotCounts.getOrDefault(key, 0) + 1);
                 }
             }
-            if (maxCount > -1) {
-                return new CommandResult(
-                        "command.add.eq.quantity.success",
-                        Map.of("count", countAdded, "quantity", maxCount, "profile", activeProfile)
-                );
-            } else {
-                return new CommandResult(
-                        "command.add.eq.noQuantity.success",
-                        Map.of("count", countAdded, "profile", activeProfile)
-                );
+            int countAdded = 0;
+            for (Map.Entry<String, Integer> entrySet : slotCounts.entrySet()) {
+                String composite = entrySet.getKey();
+                int count = entrySet.getValue();
+                String[] parts = composite.split("\\|", -1);
+                FilterEntry entry = new FilterEntry(parts[0], parts[1], parts[2], parts.length > 3 ? parts[3] : "", count);
+                ClientFilterManager.addItem(entry);
+                countAdded++;
             }
-
+            return new CommandResult(
+                    "command.add.eq.count.success",
+                    Map.of("count", countAdded, "profile", activeProfile)
+            );
         } else {
-            ClientFilterManager.addItem(target, maxCount);
+            FilterEntry entry = CompositeKeyUtil.parseFilterEntry(target, maxCount);
+            ClientFilterManager.addItem(entry);
 
             if (maxCount > -1) {
                 return new CommandResult(
                         "command.add.quantity.success",
-                        Map.of("item", target, "quantity", maxCount, "profile", activeProfile)
+                        Map.of("item", entry.toString(), "quantity", maxCount, "profile", activeProfile)
                 );
             } else {
                 return new CommandResult(
                         "command.add.noQuantity.success",
-                        Map.of("item", target, "profile", activeProfile)
+                        Map.of("item", entry.toString(), "profile", activeProfile)
                 );
             }
         }
     }
 
-    /**
-     * Obsługa komendy /ltr remove <...>
-     * Przykładowo: "hand", "eq", "minecraft:obsidian"
-     */
     public static CommandResult handleRemove(String rawArgs, PlayerEntity player) {
         if (player == null) {
             return new CommandResult("command.error.playerOnly");
         }
 
-        String[] split = rawArgs.trim().split("\\s+");
-        if (split.length == 0) {
-            return new CommandResult("command.remove.syntaxError");
-        }
-        String target = split[0];
+        String target = rawArgs.trim();
         String activeProfile = ClientFilterManager.getActiveProfile();
 
         if ("hand".equalsIgnoreCase(target)) {
@@ -148,36 +181,44 @@ public class FilterCommandHandler {
             if (handStack.isEmpty()) {
                 return new CommandResult("command.remove.hand.empty");
             }
-            String itemId = Registries.ITEM.getId(handStack.getItem()).toString();
-            ClientFilterManager.removeItem(itemId);
+            String materialId = Registries.ITEM.getId(handStack.getItem()).toString();
+            FilterEntry entry = new FilterEntry(materialId, "", materialId, "", -1);
+            ClientFilterManager.removeItem(entry);
 
             return new CommandResult(
                     "command.remove.success",
-                    Map.of("item", itemId, "profile", activeProfile)
+                    Map.of("item", entry.toString(), "profile", activeProfile)
             );
-
         } else if ("eq".equalsIgnoreCase(target)) {
-            int countRemoved = 0;
+            java.util.Set<String> distinctKeys = new java.util.HashSet<>();
             for (int i = 0; i < player.getInventory().size(); i++) {
                 ItemStack stack = player.getInventory().getStack(i);
                 if (!stack.isEmpty()) {
-                    String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-                    if (ClientFilterManager.hasItem(activeProfile, itemId)) {
-                        ClientFilterManager.removeItem(itemId);
-                        countRemoved++;
-                    }
+                    String materialId = Registries.ITEM.getId(stack.getItem()).toString();
+                    FilterEntry entry = new FilterEntry(materialId, "", materialId, "", -1);
+                    String key = entry.baseName + "|" + entry.lore + "|" + entry.material + "|" + entry.enchants;
+                    distinctKeys.add(key);
+                }
+            }
+            int countRemoved = 0;
+            for (String composite : distinctKeys) {
+                String[] parts = composite.split("\\|", -1);
+                FilterEntry entry = new FilterEntry(parts[0], parts[1], parts[2], parts.length > 3 ? parts[3] : "", -1);
+                if (ClientFilterManager.hasItem(activeProfile, entry)) {
+                    ClientFilterManager.removeItem(entry);
+                    countRemoved++;
                 }
             }
             return new CommandResult(
                     "command.remove.eq.success",
                     Map.of("count", countRemoved, "profile", activeProfile)
             );
-
         } else {
-            ClientFilterManager.removeItem(target);
+            FilterEntry entry = CompositeKeyUtil.parseFilterEntry(target, -1);
+            ClientFilterManager.removeItem(entry);
             return new CommandResult(
                     "command.remove.success",
-                    Map.of("item", target, "profile", activeProfile)
+                    Map.of("item", entry.toString(), "profile", activeProfile)
             );
         }
     }

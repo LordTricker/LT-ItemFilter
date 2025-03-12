@@ -19,6 +19,7 @@ import pl.lordtricker.ltifilter.client.config.ConfigLoader;
 import pl.lordtricker.ltifilter.client.filter.FilterCommandHandler;
 import pl.lordtricker.ltifilter.client.keybinding.ToggleFilter;
 import pl.lordtricker.ltifilter.client.util.ColorUtils;
+import pl.lordtricker.ltifilter.client.util.CompositeKeyUtil;
 import pl.lordtricker.ltifilter.client.util.Messages;
 
 import java.util.HashMap;
@@ -37,15 +38,14 @@ public class ClientCommandRegistration {
     ) {
         dispatcher.register(
                 ClientCommandManager.literal("ltf")
-                        // /ltf -> podstawowe info
+                        // /ltf – podstawowe info
                         .executes(ctx -> {
                             String activeProfile = ClientFilterManager.getActiveProfile();
-                            // Wyświetlamy np. "Aktualny profil: <profile>"
                             String message = Messages.format("mod.info", Map.of("profile", activeProfile));
                             ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(message));
                             return 1;
                         })
-                        // /ltf filter -> toggle
+                        // /ltf filter – toggle
                         .then(ClientCommandManager.literal("filter")
                                 .executes(ctx -> {
                                     ToggleFilter.filterEnabled = !ToggleFilter.filterEnabled;
@@ -57,7 +57,7 @@ public class ClientCommandRegistration {
                                     return 1;
                                 })
                         )
-                        // /ltf profiles -> lista profili, aktywny profil podświetlony kolorem &b (AQUA)
+                        // /ltf profiles – lista profili
                         .then(ClientCommandManager.literal("profiles")
                                 .executes(ctx -> {
                                     String allProfiles = ClientFilterManager.listProfiles();
@@ -98,19 +98,17 @@ public class ClientCommandRegistration {
                                         .executes(ctx -> {
                                             String profile = StringArgumentType.getString(ctx, "profile");
                                             ClientFilterManager.setActiveProfile(profile);
-                                            String msg = Messages.format("command.profile.change",
-                                                    Map.of("profile", profile));
+                                            String msg = Messages.format("command.profile.change", Map.of("profile", profile));
                                             ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(msg));
                                             return 1;
                                         })
                                 )
                         )
-                        // /ltf add <args> z podpowiedziami
+                        // /ltf add <args>
                         .then(ClientCommandManager.literal("add")
                                 .then(ClientCommandManager.argument("args", StringArgumentType.greedyString())
                                         .suggests((context, builder) -> {
                                             String remaining = builder.getRemaining();
-                                            // Znajdź ostatnią spację by oddzielić część liczbową od itemId
                                             int lastSpace = remaining.lastIndexOf(' ');
                                             String prefixBefore;
                                             String prefix;
@@ -122,13 +120,11 @@ public class ClientCommandRegistration {
                                                 prefix = remaining.substring(lastSpace + 1);
                                             }
                                             prefix = prefix.toLowerCase();
-                                            // Podpowiadamy tylko, gdy ostatni token zaczyna się od "minecraft:"
                                             if (prefix.startsWith("minecraft:")) {
                                                 var allItemIds = Registries.ITEM.getIds();
                                                 for (var itemId : allItemIds) {
                                                     String asString = itemId.toString();
                                                     if (asString.toLowerCase().startsWith(prefix)) {
-                                                        // Sugestia zawiera część liczbową oraz spację, a następnie pełną nazwę itemu
                                                         builder.suggest(prefixBefore + asString);
                                                     }
                                                 }
@@ -177,7 +173,7 @@ public class ClientCommandRegistration {
                                         })
                                 )
                         )
-                        // /ltf list
+                        // /ltf list – wyświetlanie listy wpisów z przyciskami usuwania i edycji
                         .then(ClientCommandManager.literal("list")
                                 .executes(ctx -> {
                                     String activeProfile = ClientFilterManager.getActiveProfile();
@@ -187,21 +183,46 @@ public class ClientCommandRegistration {
                                     MutableText header = (MutableText) ColorUtils.translateColorCodes(msgHeader);
 
                                     MutableText finalText = Text.empty();
-                                    for (FilterEntry item : items) {
+                                    for (FilterEntry entry : items) {
+                                        String friendlyName = entry.toString();
+
+                                        String editCommand = "/ltf add " + entry.maxCount + " " + entry.baseName;
+                                        if (entry.enchants != null && !entry.enchants.isEmpty()) {
+                                            editCommand += " {\"" + entry.enchants + "\"}";
+                                        }
+                                        if (entry.material != null && !entry.material.isEmpty() &&
+                                                !entry.baseName.equalsIgnoreCase(entry.material)) {
+                                            String displayMaterial = entry.material.toLowerCase().startsWith("minecraft:")
+                                                    ? entry.material.substring("minecraft:".length())
+                                                    : entry.material;
+                                            editCommand += " [\"" + displayMaterial + "\"]";
+                                        }
+                                        if (entry.lore != null && !entry.lore.isEmpty()) {
+                                            editCommand += " (\"" + entry.lore + "\")";
+                                        }
+
+                                        MutableText editIcon = (MutableText) ColorUtils.translateColorCodes(Messages.get("list.icon.edit"));
+                                        editIcon.setStyle(
+                                                Style.EMPTY.withClickEvent(new ClickEvent(
+                                                                ClickEvent.Action.SUGGEST_COMMAND, editCommand))
+                                                        .withHoverEvent(new HoverEvent(
+                                                                HoverEvent.Action.SHOW_TEXT, Text.literal("Kliknij, aby edytować " + friendlyName)))
+                                        );
                                         String removeIconStr = Messages.get("list.icon.remove");
                                         String removeIconHover = Messages.get("list.icon.remove.hover");
                                         MutableText removeIcon = (MutableText) ColorUtils.translateColorCodes(removeIconStr);
+                                        String removeCommand = "/ltf remove " + CompositeKeyUtil.buildCommand(entry);
                                         removeIcon.setStyle(
                                                 Style.EMPTY.withClickEvent(new ClickEvent(
-                                                                ClickEvent.Action.RUN_COMMAND, "/ltf remove " + item))
+                                                                ClickEvent.Action.RUN_COMMAND, removeCommand))
                                                         .withHoverEvent(new HoverEvent(
-                                                                HoverEvent.Action.SHOW_TEXT, Text.literal(removeIconHover + item)))
+                                                                HoverEvent.Action.SHOW_TEXT, Text.literal(removeIconHover + " " + friendlyName)))
                                         );
 
-                                        String itemLineStr = Messages.format("list.item.line", Map.of("item", item.toString()));
+                                        String itemLineStr = Messages.format("list.item.line", Map.of("item", friendlyName));
                                         MutableText itemLine = (MutableText) ColorUtils.translateColorCodes(itemLineStr);
-
                                         MutableText lineText = Text.empty()
+                                                .append(editIcon).append(Text.literal(" "))
                                                 .append(removeIcon).append(Text.literal(" "))
                                                 .append(itemLine).append(Text.literal("\n"));
                                         finalText.append(lineText);
@@ -224,7 +245,6 @@ public class ClientCommandRegistration {
                         .then(ClientCommandManager.literal("config")
                                 .then(ClientCommandManager.literal("save")
                                         .executes(ctx -> {
-                                            // Zapis do configu
                                             ClientFilterManager.saveToConfig(LtifilterClient.serversConfig);
                                             ConfigLoader.saveConfig(LtifilterClient.serversConfig);
                                             String msg = Messages.get("command.config.save.success");
@@ -234,11 +254,8 @@ public class ClientCommandRegistration {
                                 )
                                 .then(ClientCommandManager.literal("reload")
                                         .executes(ctx -> {
-                                            // Przeładuj config
                                             LtifilterClient.serversConfig = ConfigLoader.loadConfig();
                                             ClientFilterManager.reinitProfilesFromConfig(LtifilterClient.serversConfig);
-
-                                            // Po przeładowaniu sprawdzamy serwer
                                             String address = LtifilterClient.getServerAddress();
                                             var entry = LtifilterClient.findServerEntry(address);
                                             if (entry != null) {
