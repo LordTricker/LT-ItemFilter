@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
 import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.MutableText;
@@ -121,7 +121,7 @@ public class ClientCommandRegistration {
                                             }
                                             prefix = prefix.toLowerCase();
                                             if (prefix.startsWith("minecraft:")) {
-                                                var allItemIds = Registries.ITEM.getIds();
+                                                var allItemIds = Registry.ITEM.getIds();
                                                 for (var itemId : allItemIds) {
                                                     String asString = itemId.toString();
                                                     if (asString.toLowerCase().startsWith(prefix)) {
@@ -150,7 +150,7 @@ public class ClientCommandRegistration {
                                         .suggests((context, builder) -> {
                                             String remaining = builder.getRemaining().toLowerCase();
                                             if (remaining.contains("minecraft:")) {
-                                                var allItemIds = Registries.ITEM.getIds();
+                                                var allItemIds = Registry.ITEM.getIds();
                                                 for (var itemId : allItemIds) {
                                                     String asString = itemId.toString();
                                                     if (asString.startsWith(remaining)) {
