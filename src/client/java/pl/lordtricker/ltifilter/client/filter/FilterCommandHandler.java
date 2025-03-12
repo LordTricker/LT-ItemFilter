@@ -40,10 +40,10 @@ public class FilterCommandHandler {
             return new CommandResult("command.error.playerOnly");
         }
 
+        // Nowa logika parsowania: jeśli pierwszy token nie jest liczbą, traktujemy cały ciąg jako target i maxCount = -1.
         String[] split = rawArgs.trim().split("\\s+", 2);
         int maxCount = -1;
-        String target = null;
-
+        String target = "";
         if (split.length == 1) {
             target = split[0];
         } else {
@@ -51,11 +51,13 @@ public class FilterCommandHandler {
                 maxCount = Integer.parseInt(split[0]);
                 target = split[1];
             } catch (NumberFormatException e) {
-                return new CommandResult("command.add.syntaxError");
+                // Pierwszy token nie jest liczbą – traktujemy cały ciąg jako target, ustawiamy unlimited
+                target = rawArgs.trim();
+                maxCount = -1;
             }
         }
 
-        if (target == null || target.isEmpty()) {
+        if (target.isEmpty()) {
             return new CommandResult("command.add.syntaxError");
         }
 
@@ -67,12 +69,19 @@ public class FilterCommandHandler {
                 return new CommandResult("command.add.hand.empty");
             }
             String materialId = Registries.ITEM.getId(handStack.getItem()).toString();
-            String customName = handStack.getName().getString();
+
+            String customName;
+            if (handStack.getName() != null) {
+                customName = handStack.getName().getString();
+            } else {
+                customName = materialId;
+            }
 
             String rawEnchants = handStack.getEnchantments().toString();
             StringBuilder enchantBuilder = new StringBuilder();
             boolean foundAny = false;
-            Matcher matcherNew = NEWER_PATTERN.matcher(rawEnchants);
+            Pattern newPattern = Pattern.compile("ResourceKey\\[\\s*minecraft:enchantment\\s*/\\s*minecraft:([^\\]]+)\\]\\s*=.*?=>\\s*(\\d+)");
+            Matcher matcherNew = newPattern.matcher(rawEnchants);
             while (matcherNew.find()) {
                 foundAny = true;
                 String enchId = matcherNew.group(1).trim();
@@ -85,7 +94,8 @@ public class FilterCommandHandler {
                 enchantBuilder.append(mappedEnchant);
             }
             if (!foundAny) {
-                Matcher matcherOld = OLDER_PATTERN.matcher(rawEnchants);
+                Pattern oldPattern = Pattern.compile("\\{id:\"([^\"]+)\",lvl:(\\d+)s\\}");
+                Matcher matcherOld = oldPattern.matcher(rawEnchants);
                 while (matcherOld.find()) {
                     String enchId = matcherOld.group(1).trim();
                     String levelStr = matcherOld.group(2).trim();
@@ -102,9 +112,9 @@ public class FilterCommandHandler {
             }
             String enchantmentsString = enchantBuilder.toString();
 
-            String baseNameToUse = materialId;
-            if (!enchantmentsString.isEmpty() && !customName.equalsIgnoreCase(materialId)) {
-                baseNameToUse = customName;
+            String baseNameToUse = customName;
+            if (customName.equalsIgnoreCase(materialId)) {
+                baseNameToUse = materialId;
             }
 
             FilterEntry entry = new FilterEntry(baseNameToUse, "", materialId, enchantmentsString, maxCount);
@@ -113,12 +123,12 @@ public class FilterCommandHandler {
             if (maxCount > -1) {
                 return new CommandResult(
                         "command.add.hand.quantity.success",
-                        Map.of("item", entry.toString(), "quantity", maxCount, "profile", activeProfile)
+                        Map.of("item", entry.toString(), "quantity", maxCount, "profile", ClientFilterManager.getActiveProfile())
                 );
             } else {
                 return new CommandResult(
                         "command.add.hand.noQuantity.success",
-                        Map.of("item", entry.toString(), "profile", activeProfile)
+                        Map.of("item", entry.toString(), "profile", ClientFilterManager.getActiveProfile())
                 );
             }
         } else if ("eq".equalsIgnoreCase(target)) {
