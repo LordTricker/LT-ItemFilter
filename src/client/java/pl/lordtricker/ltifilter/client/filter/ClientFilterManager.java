@@ -3,7 +3,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.item.TooltipContext;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.text.Text;
 import pl.lordtricker.ltifilter.client.config.FilterEntry;
 import pl.lordtricker.ltifilter.client.config.ServerEntry;
@@ -142,7 +142,7 @@ public class ClientFilterManager {
     public static boolean matchesFilter(FilterEntry filter, ItemStack stack) {
         if (filter == null || stack == null || stack.isEmpty()) return false;
 
-        String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+        String itemId = Registry.ITEM.getId(stack.getItem()).toString();
         if (!filter.material.isEmpty() && !itemId.equalsIgnoreCase(filter.material)) {
             return false;
         }
