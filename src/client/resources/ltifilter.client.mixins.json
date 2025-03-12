@@ -3,12 +3,12 @@
 	"package": "pl.lordtricker.ltifilter.client.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
-      "ItemEntityRendererMixin",
-      "ItemStackEntityRenderStateMixin"
+		"ItemEntityRendererMixin",
+		"ItemStackEntityRenderStateMixin"
 	],
 	"client": [
-      "ItemEntityRendererMixin",
-      "ItemStackEntityRenderStateMixin"
+		"ItemEntityRendererMixin",
+		"ItemStackEntityRenderStateMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

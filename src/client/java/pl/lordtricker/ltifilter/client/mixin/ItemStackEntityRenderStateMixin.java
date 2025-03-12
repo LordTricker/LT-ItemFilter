@@ -28,4 +28,3 @@ public class ItemStackEntityRenderStateMixin implements ItemStackEntityRenderBea
         return shouldRenderBeam;
     }
 }
-
