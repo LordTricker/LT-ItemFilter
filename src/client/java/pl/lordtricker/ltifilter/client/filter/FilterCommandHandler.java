@@ -69,8 +69,8 @@ public class FilterCommandHandler {
             String materialId = Registries.ITEM.getId(handStack.getItem()).toString();
 
             String customName;
-            if (handStack.hasCustomName()) {
-                customName = handStack.getName().getString();
+            if (handStack.getCustomName() != null) {
+                customName = handStack.getCustomName().getString();
             } else {
                 customName = materialId;
             }
@@ -110,7 +110,11 @@ public class FilterCommandHandler {
             }
             String enchantmentsString = enchantBuilder.toString();
 
-            String baseNameToUse = customName.equalsIgnoreCase(materialId) ? materialId : customName;
+            String baseNameToUse = customName;
+
+            if (customName.equalsIgnoreCase(materialId)) {
+                baseNameToUse = materialId;
+            }
 
             FilterEntry entry = new FilterEntry(baseNameToUse, "", materialId, enchantmentsString, maxCount);
             ClientFilterManager.addItem(entry);
@@ -118,12 +122,12 @@ public class FilterCommandHandler {
             if (maxCount > -1) {
                 return new CommandResult(
                         "command.add.hand.quantity.success",
-                        Map.of("item", entry.toString(), "quantity", maxCount, "profile", activeProfile)
+                        Map.of("item", entry.toString(), "quantity", maxCount, "profile", ClientFilterManager.getActiveProfile())
                 );
             } else {
                 return new CommandResult(
                         "command.add.hand.noQuantity.success",
-                        Map.of("item", entry.toString(), "profile", activeProfile)
+                        Map.of("item", entry.toString(), "profile", ClientFilterManager.getActiveProfile())
                 );
             }
         } else if ("eq".equalsIgnoreCase(target)) {
