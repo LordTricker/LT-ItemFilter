@@ -67,11 +67,18 @@ public class FilterCommandHandler {
                 return new CommandResult("command.add.hand.empty");
             }
             String materialId = Registries.ITEM.getId(handStack.getItem()).toString();
-            String customName = handStack.getName().getString();
+
+            String customName;
+            if (handStack.hasCustomName()) {
+                customName = handStack.getName().getString();
+            } else {
+                customName = materialId;
+            }
 
             String rawEnchants = handStack.getEnchantments().toString();
             StringBuilder enchantBuilder = new StringBuilder();
             boolean foundAny = false;
+            Pattern NEWER_PATTERN = Pattern.compile("ResourceKey\\[\\s*minecraft:enchantment\\s*/\\s*minecraft:([^\\]]+)\\]\\s*=.*?=>\\s*(\\d+)");
             Matcher matcherNew = NEWER_PATTERN.matcher(rawEnchants);
             while (matcherNew.find()) {
                 foundAny = true;
@@ -85,6 +92,7 @@ public class FilterCommandHandler {
                 enchantBuilder.append(mappedEnchant);
             }
             if (!foundAny) {
+                Pattern OLDER_PATTERN = Pattern.compile("\\{id:\"([^\"]+)\",lvl:(\\d+)s\\}");
                 Matcher matcherOld = OLDER_PATTERN.matcher(rawEnchants);
                 while (matcherOld.find()) {
                     String enchId = matcherOld.group(1).trim();
@@ -102,10 +110,7 @@ public class FilterCommandHandler {
             }
             String enchantmentsString = enchantBuilder.toString();
 
-            String baseNameToUse = materialId;
-            if (!enchantmentsString.isEmpty() && !customName.equalsIgnoreCase(materialId)) {
-                baseNameToUse = customName;
-            }
+            String baseNameToUse = customName.equalsIgnoreCase(materialId) ? materialId : customName;
 
             FilterEntry entry = new FilterEntry(baseNameToUse, "", materialId, enchantmentsString, maxCount);
             ClientFilterManager.addItem(entry);
