@@ -124,10 +124,6 @@ public class ClientFilterManager {
         return null;
     }
 
-    public static Map<String, List<FilterEntry>> getAllProfiles() {
-        return allProfiles;
-    }
-
     private static final Pattern NEWER_PATTERN = Pattern.compile(
             "ResourceKey\\[\\s*minecraft:enchantment\\s*/\\s*minecraft:([^\\]]+)\\]\\s*=.*?=>\\s*(\\d+)"
     );
@@ -165,7 +161,9 @@ public class ClientFilterManager {
             tooltipBuilder.append(noColor).append(" ");
         }
         String tooltip = tooltipBuilder.toString().toLowerCase();
-        if (!filter.lore.isEmpty() && !tooltip.contains(filter.lore.toLowerCase())) {
+        String normTooltip = tooltip.replaceAll("\\s+", " ").trim();
+        String normLore = filter.lore.toLowerCase().replaceAll("\\s+", " ").trim();
+        if (!normLore.isEmpty() && !normTooltip.contains(normLore)) {
             return false;
         }
 
