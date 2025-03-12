@@ -185,15 +185,28 @@ public class ClientCommandRegistration {
                                     MutableText finalText = Text.empty();
                                     for (FilterEntry entry : items) {
                                         String friendlyName = entry.toString();
-                                        String editCommand = "/ltf add " + entry.maxCount + " " + CompositeKeyUtil.buildCommand(entry);
-                                        String editIconStr = Messages.get("list.icon.edit");
-                                        String editIconHover = Messages.get("list.icon.edit.hover");
-                                        MutableText editIcon = (MutableText) ColorUtils.translateColorCodes(editIconStr);
+
+                                        String editCommand = "/ltf add " + entry.maxCount + " " + entry.baseName;
+                                        if (entry.enchants != null && !entry.enchants.isEmpty()) {
+                                            editCommand += " {\"" + entry.enchants + "\"}";
+                                        }
+                                        if (entry.material != null && !entry.material.isEmpty() &&
+                                                !entry.baseName.equalsIgnoreCase(entry.material)) {
+                                            String displayMaterial = entry.material.toLowerCase().startsWith("minecraft:")
+                                                    ? entry.material.substring("minecraft:".length())
+                                                    : entry.material;
+                                            editCommand += " [\"" + displayMaterial + "\"]";
+                                        }
+                                        if (entry.lore != null && !entry.lore.isEmpty()) {
+                                            editCommand += " (\"" + entry.lore + "\")";
+                                        }
+
+                                        MutableText editIcon = (MutableText) ColorUtils.translateColorCodes(Messages.get("list.icon.edit"));
                                         editIcon.setStyle(
                                                 Style.EMPTY.withClickEvent(new ClickEvent(
                                                                 ClickEvent.Action.SUGGEST_COMMAND, editCommand))
                                                         .withHoverEvent(new HoverEvent(
-                                                                HoverEvent.Action.SHOW_TEXT, Text.literal(editIconHover + " " + friendlyName)))
+                                                                HoverEvent.Action.SHOW_TEXT, Text.literal("Kliknij, aby edytować " + friendlyName)))
                                         );
                                         String removeIconStr = Messages.get("list.icon.remove");
                                         String removeIconHover = Messages.get("list.icon.remove.hover");

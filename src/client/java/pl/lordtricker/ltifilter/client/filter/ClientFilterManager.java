@@ -160,17 +160,17 @@ public class ClientFilterManager {
         }
 
         PlayerEntity player = MinecraftClient.getInstance().player;
-        List<Text> tooltip = stack.getTooltip(player, TooltipContext.BASIC);
-
-        // Usuwamy kody kolorów z tooltipu
-        List<String> loreLines = new ArrayList<>();
-        for (Text line : tooltip) {
+        List<Text> tooltipLines = stack.getTooltip(player, TooltipContext.BASIC);
+        StringBuilder tooltipBuilder = new StringBuilder();
+        for (Text line : tooltipLines) {
             String plain = line.getString();
-            String noColorLine = ColorStripUtils.stripAllColorsAndFormats(plain);
-            loreLines.add(noColorLine);
+            String noColor = pl.lordtricker.ltifilter.client.util.ColorStripUtils.stripAllColorsAndFormats(plain);
+            tooltipBuilder.append(noColor).append(" ");
         }
-
-        if (!filter.lore.isEmpty() && !tooltip.contains(filter.lore.toLowerCase())) {
+        String tooltip = tooltipBuilder.toString().toLowerCase();
+        String normTooltip = tooltip.replaceAll("\\s+", " ").trim();
+        String normLore = filter.lore.toLowerCase().replaceAll("\\s+", " ").trim();
+        if (!normLore.isEmpty() && !normTooltip.contains(normLore)) {
             return false;
         }
 
