@@ -148,6 +148,7 @@ public class ClientFilterManager {
 
         String customName = stack.getName().getString().toLowerCase();
         if (!filter.baseName.isEmpty() && !filter.baseName.equalsIgnoreCase(filter.material)) {
+
             String expectedName = filter.baseName.toLowerCase();
             if (expectedName.startsWith("minecraft:")) {
                 expectedName = expectedName.substring("minecraft:".length());
@@ -165,7 +166,9 @@ public class ClientFilterManager {
             tooltipBuilder.append(noColor).append(" ");
         }
         String tooltip = tooltipBuilder.toString().toLowerCase();
-        if (!filter.lore.isEmpty() && !tooltip.contains(filter.lore.toLowerCase())) {
+        String normTooltip = tooltip.replaceAll("\\s+", " ").trim();
+        String normLore = filter.lore.toLowerCase().replaceAll("\\s+", " ").trim();
+        if (!normLore.isEmpty() && !normTooltip.contains(normLore)) {
             return false;
         }
 
