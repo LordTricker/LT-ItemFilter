@@ -1,31 +1,31 @@
 package pl.lordtricker.ltifilter.client.filter;
-
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.item.TooltipContext;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.registry.Registries;
-import pl.lordtricker.ltifilter.client.LtifilterClient;
+import net.minecraft.text.Text;
 import pl.lordtricker.ltifilter.client.config.FilterEntry;
 import pl.lordtricker.ltifilter.client.config.ServerEntry;
 import pl.lordtricker.ltifilter.client.config.ServersConfig;
+import pl.lordtricker.ltifilter.client.util.ColorStripUtils;
+import pl.lordtricker.ltifilter.client.util.EnchantMapper;
 
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ClientFilterManager {
     private static String activeProfile = null;
     private static final Map<String, List<FilterEntry>> allProfiles = new HashMap<>();
 
-    /**
-     * Wczytuje dane z configu (ServersConfig) do allProfiles.
-     * Wywoływane np. przy starcie gry albo przy /ltf config reload.
-     */
     public static void loadFromConfig(ServersConfig serversConfig) {
         clearAllProfiles();
         for (ServerEntry entry : serversConfig.servers) {
             String profileName = entry.profileName;
-            allProfiles.putIfAbsent(profileName, new ArrayList<>());
+            allProfiles.putIfAbsent(profileName, new java.util.ArrayList<>());
             for (FilterEntry fe : entry.filters) {
-                if (fe.material != null && !fe.material.isEmpty()) {
-                    allProfiles.get(profileName).add(fe);
-                }
+                allProfiles.get(profileName).add(fe);
             }
         }
         if (activeProfile == null) {
@@ -33,9 +33,6 @@ public class ClientFilterManager {
         }
     }
 
-    /**
-     * Zapisuje aktualne dane (allProfiles) do configu (w polach filters).
-     */
     public static void saveToConfig(ServersConfig serversConfig) {
         for (ServerEntry entry : serversConfig.servers) {
             entry.filters.clear();
@@ -56,52 +53,67 @@ public class ClientFilterManager {
 
     public static void setActiveProfile(String profile) {
         activeProfile = profile;
-        allProfiles.putIfAbsent(profile, new ArrayList<>());
+        allProfiles.putIfAbsent(profile, new java.util.ArrayList<>());
     }
 
-    /**
-     * Dodaje przedmiot bez limitu.
-     */
-    public static void addItem(String material) {
-        addItem(material, -1);
-    }
-
-    /**
-     * Dodaje przedmiot do aktywnego profilu wraz z limitem.
-     * Jeśli maxCount == -1, to oznacza brak limitu.
-     */
-    public static void addItem(String material, int maxCount) {
+    public static void addItem(FilterEntry entry) {
         List<FilterEntry> items = allProfiles.get(activeProfile);
         if (items == null) {
-            items = new ArrayList<>();
+            items = new java.util.ArrayList<>();
             allProfiles.put(activeProfile, items);
         }
-        items.add(new FilterEntry(material, maxCount));
+        items.removeIf(fe -> entriesEqual(fe, entry));
+        items.add(entry);
     }
 
-    /**
-     * Usuwa przedmiot z aktywnego profilu.
-     */
-    public static void removeItem(String material) {
+    public static void removeItem(FilterEntry entry) {
         List<FilterEntry> items = allProfiles.get(activeProfile);
         if (items != null) {
-            items.removeIf(fe -> fe.material.equalsIgnoreCase(material));
+            items.removeIf(fe -> entriesEqual(fe, entry));
         }
     }
 
-    /**
-     * Zwraca listę filtrów (FilterEntry) dla danego profilu.
-     */
     public static List<FilterEntry> getItems(String profile) {
-        return allProfiles.getOrDefault(profile, Collections.emptyList());
+        List<FilterEntry> list = allProfiles.getOrDefault(profile, Collections.emptyList());
+        List<FilterEntry> result = new ArrayList<>();
+        for (FilterEntry fe : list) {
+            if (fe != null) {
+                result.add(fe);
+            }
+        }
+        return result;
     }
 
-    public static Map<String, List<FilterEntry>> getAllProfiles() {
-        return allProfiles;
+    public static boolean hasItem(String profile, FilterEntry entry) {
+        List<FilterEntry> items = allProfiles.get(profile);
+        if (items == null) return false;
+        for (FilterEntry fe : items) {
+            if (entriesEqual(fe, entry)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean entriesEqual(FilterEntry a, FilterEntry b) {
+        return safeEqualsIgnoreCase(a.baseName, b.baseName)
+                && safeEqualsIgnoreCase(a.lore, b.lore)
+                && safeEqualsIgnoreCase(a.material, b.material)
+                && safeEqualsIgnoreCase(a.enchants, b.enchants);
+    }
+
+    private static boolean safeEqualsIgnoreCase(String x, String y) {
+        if (x == null && y == null) return true;
+        if (x == null || y == null) return false;
+        return x.equalsIgnoreCase(y);
     }
 
     public static String listProfiles() {
         return String.join(", ", allProfiles.keySet());
+    }
+
+    public static void clearAllProfiles() {
+        allProfiles.clear();
     }
 
     private static ServerEntry findServerEntryByProfile(ServersConfig serversConfig, String profileName) {
@@ -114,11 +126,119 @@ public class ClientFilterManager {
         return null;
     }
 
+    public static Map<String, List<FilterEntry>> getAllProfiles() {
+        return allProfiles;
+    }
+
+    private static final Pattern NEWER_PATTERN = Pattern.compile(
+            "ResourceKey\\[\\s*minecraft:enchantment\\s*/\\s*minecraft:([^\\]]+)\\]\\s*=.*?=>\\s*(\\d+)"
+    );
+    private static final Pattern OLDER_PATTERN = Pattern.compile(
+            "\\{id:\"([^\"]+)\",lvl:(\\d+)s\\}"
+    );
+
     /**
-     * Czyści wszystkie profile.
+     * Metoda sprawdzająca, czy dany przedmiot (ItemStack) spełnia wszystkie kryteria filtra.
      */
-    public static void clearAllProfiles() {
-        allProfiles.clear();
+    public static boolean matchesFilter(FilterEntry filter, ItemStack stack) {
+        if (filter == null || stack == null || stack.isEmpty()) return false;
+
+        String itemId = Registries.ITEM.getId(stack.getItem()).toString();
+        if (!filter.material.isEmpty() && !itemId.equalsIgnoreCase(filter.material)) {
+            return false;
+        }
+
+        String customName = stack.getName().getString().toLowerCase();
+        if (!filter.baseName.isEmpty() && !filter.baseName.equalsIgnoreCase(filter.material)) {
+            String expectedName = filter.baseName.toLowerCase();
+            if (expectedName.startsWith("minecraft:")) {
+                expectedName = expectedName.substring("minecraft:".length());
+            }
+            if (!customName.contains(expectedName)) {
+                return false;
+            }
+        }
+
+        PlayerEntity player = MinecraftClient.getInstance().player;
+        List<Text> tooltip = stack.getTooltip(player, TooltipContext.BASIC);
+
+        // Usuwamy kody kolorów z tooltipu
+        List<String> loreLines = new ArrayList<>();
+        for (Text line : tooltip) {
+            String plain = line.getString();
+            String noColorLine = ColorStripUtils.stripAllColorsAndFormats(plain);
+            loreLines.add(noColorLine);
+        }
+
+        if (!filter.lore.isEmpty() && !tooltip.contains(filter.lore.toLowerCase())) {
+            return false;
+        }
+
+        String rawEnchants = stack.getEnchantments().toString();
+        StringBuilder enchantBuilder = new StringBuilder();
+        boolean foundAny = false;
+        Matcher matcherNew = NEWER_PATTERN.matcher(rawEnchants);
+        while (matcherNew.find()) {
+            foundAny = true;
+            String enchId = matcherNew.group(1).trim();
+            String levelStr = matcherNew.group(2).trim();
+            String shortEnchant = enchId + levelStr;
+            String mappedEnchant = EnchantMapper.mapEnchant(shortEnchant, true);
+            if (enchantBuilder.length() > 0) {
+                enchantBuilder.append(",");
+            }
+            enchantBuilder.append(mappedEnchant);
+        }
+        if (!foundAny) {
+            Matcher matcherOld = OLDER_PATTERN.matcher(rawEnchants);
+            while (matcherOld.find()) {
+                String enchId = matcherOld.group(1).trim();
+                String levelStr = matcherOld.group(2).trim();
+                if (enchId.startsWith("minecraft:")) {
+                    enchId = enchId.substring("minecraft:".length());
+                }
+                String shortEnchant = enchId + levelStr;
+                String mappedEnchant = EnchantMapper.mapEnchant(shortEnchant, false);
+                if (enchantBuilder.length() > 0) {
+                    enchantBuilder.append(",");
+                }
+                enchantBuilder.append(mappedEnchant);
+            }
+        }
+        String enchantmentsString = enchantBuilder.toString().toLowerCase();
+        if (!filter.enchants.isEmpty() && !enchantmentsString.contains(filter.enchants.toLowerCase())) {
+            return false;
+        }
+
+        return true;
+    }
+
+
+    /**
+     * Sprawdza, czy dany przedmiot powinien być wyrenderowany z efektem beam.
+     * Dla czyszczenia ekwipunku użyjemy oddzielnej logiki (patrz InventoryCleaner).
+     */
+    public static boolean shouldRenderItemBeam(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) return false;
+
+        List<FilterEntry> filters = getItems(getActiveProfile());
+        for (FilterEntry fe : filters) {
+            if (matchesFilter(fe, stack)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static void reinitProfilesFromConfig(ServersConfig serversConfig) {
+        loadFromConfig(serversConfig);
+        String address = pl.lordtricker.ltifilter.client.LtifilterClient.getServerAddress();
+        ServerEntry serverEntry = findServerEntryByAddress(serversConfig, address);
+        if (serverEntry != null) {
+            setActiveProfile(serverEntry.profileName);
+        } else {
+            setActiveProfile(serversConfig.defaultProfile);
+        }
     }
 
     private static ServerEntry findServerEntryByAddress(ServersConfig serversConfig, String address) {
@@ -133,54 +253,5 @@ public class ClientFilterManager {
             }
         }
         return null;
-    }
-
-    /**
-     * Reinicjalizuje profile na podstawie configu.
-     * Czyści stare profile, ładuje nowe filtry oraz ustawia aktywny profil
-     * w zależności od adresu serwera lub profilu domyślnego.
-     */
-    public static void reinitProfilesFromConfig(ServersConfig serversConfig) {
-        loadFromConfig(serversConfig);
-        String address = LtifilterClient.getServerAddress();
-        ServerEntry serverEntry = findServerEntryByAddress(serversConfig, address);
-        if (serverEntry != null) {
-            setActiveProfile(serverEntry.profileName);
-        } else {
-            setActiveProfile(serversConfig.defaultProfile);
-        }
-    }
-
-    /**
-     * Sprawdza, czy dany przedmiot (ItemStack) powinien być wyrenderowany z efektem beam.
-     * Porównuje identyfikator przedmiotu (np. "minecraft:netherite_sword") z listą filtrów dla aktywnego profilu.
-     *
-     * @param stack przedmiot do sprawdzenia
-     * @return true, jeśli przedmiot jest na liście filtrów, false w przeciwnym razie.
-     */
-    public static boolean shouldRenderItemBeam(ItemStack stack) {
-        if (stack == null || stack.isEmpty()) return false;
-        String itemId = Registries.ITEM.getId(stack.getItem()).toString();
-        List<FilterEntry> allowed = getItems(getActiveProfile());
-        for (FilterEntry fe : allowed) {
-            if (fe.material.equalsIgnoreCase(itemId)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * Sprawdza, czy przedmiot o danym identyfikatorze znajduje się w filtrach danego profilu.
-     */
-    public static boolean hasItem(String profile, String material) {
-        List<FilterEntry> items = allProfiles.get(profile);
-        if (items == null) return false;
-        for (FilterEntry fe : items) {
-            if (fe.material.equalsIgnoreCase(material)) {
-                return true;
-            }
-        }
-        return false;
     }
 }
