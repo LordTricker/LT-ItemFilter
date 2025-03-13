@@ -4,11 +4,17 @@
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [
 		"ItemEntityRendererMixin",
-		"ItemStackEntityRenderStateMixin"
+		"ItemStackEntityRenderStateMixin",
+		"SlotMouseMixin",
+		"SlotOverlayMixin",
+		"ScreenHandlerAccessor"
 	],
 	"client": [
 		"ItemEntityRendererMixin",
-		"ItemStackEntityRenderStateMixin"
+		"ItemStackEntityRenderStateMixin",
+		"SlotMouseMixin",
+		"SlotOverlayMixin",
+		"ScreenHandlerAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1

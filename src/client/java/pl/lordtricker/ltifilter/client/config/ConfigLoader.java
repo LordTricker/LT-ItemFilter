@@ -29,8 +29,7 @@ public class ConfigLoader {
     }
 
     public static ServersConfig loadConfig() {
-        Path configDir = FabricLoader.getInstance().getConfigDir();
-        Path configFile = configDir.resolve(MAIN_CONFIG_FILE_NAME);
+        Path configFile = MOD_CONFIG_DIR.resolve(MAIN_CONFIG_FILE_NAME);
 
         if (!Files.exists(configFile)) {
             ServersConfig defaultConfig = createDefaultConfig();
@@ -49,8 +48,7 @@ public class ConfigLoader {
     }
 
     public static void saveConfig(ServersConfig config) {
-        Path configDir = FabricLoader.getInstance().getConfigDir();
-        Path configFile = configDir.resolve(MAIN_CONFIG_FILE_NAME);
+        Path configFile = MOD_CONFIG_DIR.resolve(MAIN_CONFIG_FILE_NAME);
 
         try (Writer writer = Files.newBufferedWriter(configFile)) {
             GSON.toJson(config, writer);
@@ -82,8 +80,8 @@ public class ConfigLoader {
         cfg.beamSettings.radius = 0.05f;
         cfg.beamSettings.verticalOffset = 0.0f;
 
-        cfg.cleanerSettings.throwIntervalTicks = 1;
-        cfg.cleanerSettings.blockDurationMs = 200;
+        cfg.cleanerSettings.throwIntervalTicks = 2;
+        cfg.cleanerSettings.movementDelayTicks = 20;
         cfg.cleanerSettings.doNotCleanSlots = List.of(1);
 
         ServerEntry server1 = new ServerEntry();
