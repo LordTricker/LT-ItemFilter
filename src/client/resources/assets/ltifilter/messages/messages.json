@@ -72,6 +72,7 @@
     "&8- &f/ltf profiles &8- &&lista dostępnych profili",
     "&8- &f/ltf config save &7- zapisz konfigurację",
     "&8- &f/ltf config reload &7- przeładuj konfigurację",
+    "&8- &f/ltf settings &8- &7Ustawienia filtra",
     " ",
     "&8- &aCtrl &f+ &aG &8- &7Aby wlaczyc filtrowanie",
     "&8- &7albo &f/ltf filter",
