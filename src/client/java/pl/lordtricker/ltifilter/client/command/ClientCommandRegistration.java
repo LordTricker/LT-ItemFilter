@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.command.v2.FabricClientCommandSource;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.command.CommandRegistryAccess;
 import net.minecraft.registry.Registries;
 import net.minecraft.text.ClickEvent;
@@ -17,6 +18,7 @@ import pl.lordtricker.ltifilter.client.config.FilterEntry;
 import pl.lordtricker.ltifilter.client.filter.ClientFilterManager;
 import pl.lordtricker.ltifilter.client.config.ConfigLoader;
 import pl.lordtricker.ltifilter.client.filter.FilterCommandHandler;
+import pl.lordtricker.ltifilter.client.gui.MainSettingsScreen;
 import pl.lordtricker.ltifilter.client.keybinding.ToggleFilter;
 import pl.lordtricker.ltifilter.client.util.ColorUtils;
 import pl.lordtricker.ltifilter.client.util.CompositeKeyUtil;
@@ -45,6 +47,22 @@ public class ClientCommandRegistration {
                             ctx.getSource().sendFeedback(ColorUtils.translateColorCodes(message));
                             return 1;
                         })
+                        // /ltb settings – otwarcie GUI ustawień
+                        .then(ClientCommandManager.literal("settings")
+                                .executes(ctx -> {
+                                    MinecraftClient client = MinecraftClient.getInstance();
+                                    client.setScreen(null);
+                                    new Thread(() -> {
+                                        try {
+                                            Thread.sleep(100);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                        client.execute(() -> client.setScreen(new MainSettingsScreen()));
+                                    }).start();
+                                    return 1;
+                                })
+                        )
                         // /ltf filter – toggle
                         .then(ClientCommandManager.literal("filter")
                                 .executes(ctx -> {
