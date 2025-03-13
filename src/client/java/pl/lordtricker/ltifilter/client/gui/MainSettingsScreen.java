@@ -15,7 +15,7 @@ public class MainSettingsScreen extends Screen {
     private ButtonWidget saveButton;
 
     public MainSettingsScreen() {
-        super(Text.literal("LT-ItemFilter Ustawienia"));
+        super(Text.literal("LT-ItemFilter Settings"));
     }
 
     @Override
