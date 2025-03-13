@@ -9,7 +9,6 @@ import pl.lordtricker.ltifilter.client.config.ConfigLoader;
 import pl.lordtricker.ltifilter.client.config.ServerEntry;
 import pl.lordtricker.ltifilter.client.config.ServersConfig;
 import pl.lordtricker.ltifilter.client.keybinding.ToggleFilter;
-import pl.lordtricker.ltifilter.client.listener.HotbarSlotChangeListener;
 import pl.lordtricker.ltifilter.client.util.ColorUtils;
 import pl.lordtricker.ltifilter.client.util.Messages;
 
@@ -17,16 +16,16 @@ import java.util.Map;
 
 public class LtifilterClient implements ClientModInitializer {
 	public static ServersConfig serversConfig;
+	public static boolean slotSettingsActive = false;
 
 	@Override
 	public void onInitializeClient() {
 		ToggleFilter.init();
 
-		HotbarSlotChangeListener.init();
-
 		serversConfig = ConfigLoader.loadConfig();
 		ClientFilterManager.loadFromConfig(serversConfig);
 		ClientFilterManager.setActiveProfile(serversConfig.defaultProfile);
+
 
 		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
 			String address = getServerAddress();

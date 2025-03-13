@@ -3,12 +3,18 @@
 	"package": "pl.lordtricker.ltifilter.client.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-      	"ItemEntityRendererMixin",
-		"ItemEntityMixin"
+		"ItemEntityRendererMixin",
+		"ItemEntityMixin",
+		"SlotMouseMixin",
+		"SlotOverlayMixin",
+		"ScreenHandlerAccessor"
 	],
 	"client": [
-      	"ItemEntityRendererMixin",
-		"ItemEntityMixin"
+		"ItemEntityRendererMixin",
+		"ItemEntityMixin",
+		"SlotMouseMixin",
+		"SlotOverlayMixin",
+		"ScreenHandlerAccessor"
 	],
 	"injectors": {
 		"defaultRequire": 1
